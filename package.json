@@ -10,9 +10,22 @@
     "test": "jest"
   },
   "dependencies": {
+    "@react-native-community/datetimepicker": "^8.4.2",
+    "@react-native/new-app-screen": "0.80.0",
+    "@react-navigation/native": "^7.1.14",
+    "@react-navigation/native-stack": "^7.3.21",
+    "axios": "^1.10.0",
     "react": "19.1.0",
     "react-native": "0.80.0",
-    "@react-native/new-app-screen": "0.80.0"
+    "react-native-camera": "^4.2.1",
+    "react-native-material-kit": "^0.6.0-beta.1",
+    "react-native-paper": "^5.14.5",
+    "react-native-permissions": "^5.4.1",
+    "react-native-qrcode-scanner": "^1.5.5",
+    "react-native-safe-area-context": "^5.5.0",
+    "react-native-vector-icons": "^10.2.0",
+    "react-native-vision-camera": "^4.7.0",
+    "vision-camera-code-scanner": "^0.2.0"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",
