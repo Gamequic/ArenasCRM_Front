@@ -15,7 +15,6 @@ class PiecesService {
   // Buscar piezas por filtros
   async find(filters) {
     try {
-      // Limpia los filtros que estén vacíos
       const query = Object.entries(filters)
         .filter(([_, value]) => value !== undefined && value !== "")
         .map(([key, value]) => `${encodeURIComponent(key)}=${encodeURIComponent(value)}`)

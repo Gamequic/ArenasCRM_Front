@@ -29,7 +29,7 @@ function Autocomplete({ label, options, value, onSelect }: AutocompleteProps) {
 		if (text.length === 0) {
 			setShowOptions(false);
 			setFilteredOptions([]);
-			onSelect(""); // Clear selection if input cleared
+			onSelect("");
 		} else {
 			const filtered = options.filter((opt) =>
 				opt.toLowerCase().includes(text.toLowerCase())
@@ -42,7 +42,7 @@ function Autocomplete({ label, options, value, onSelect }: AutocompleteProps) {
 	const handleSelect = (val: string) => {
 		setQuery(val);
 		setShowOptions(false);
-		onSelect(val); // Notify parent of selection
+		onSelect(val);
 	};
 
 	return (
@@ -93,27 +93,29 @@ export default function AddPiece() {
 	const [paid, setPaid] = useState(false);
 	const [factura, setFactura] = useState(false);
 	const [aseguranza, setAseguranza] = useState(false);
+	const [paidWithCard, setPaidWithCard] = useState(false); // ✅ nuevo estado
 
 	// Step 3: Progress status (chips)
 	const [progressStatus, setProgressStatus] = useState('En proceso');
 
-	// Format date for display
-	const formattedDate = date.toISOString();
+	// Format date for backend: YYYY-MM-DD
+	const formattedDate = date.toISOString().split("T")[0];
 
 	// Step 4: Gather form data and log JSON
 	const handleSubmit = async () => {
 		try {
 			const data = {
-				PublicId: identifier,
-				date: formattedDate,  // ISO format for backend
+				PublicId: parseInt(identifier),       // Enviar como número
+				Date: formattedDate,
 				Hospital: hospital,
 				Medico: medico,
 				Paciente: paciente,
 				Pieza: pieza,
-				Price: precio,
+				Price: parseFloat(precio),           // Convertido a float
 				IsPaid: paid,
 				IsFactura: factura,
 				IsAseguranza: aseguranza,
+				PaidWithCard: paidWithCard,
 				Status: progressStatus,
 			};
 			console.log(data);
@@ -125,7 +127,6 @@ export default function AddPiece() {
 
 	return (
 		<View style={{ paddingHorizontal: 16, paddingVertical: 32, gap: 8 }}>
-			{/* Identifier input */}
 			<TextInput
 				label="Identificador"
 				keyboardType="numeric"
@@ -133,7 +134,6 @@ export default function AddPiece() {
 				onChangeText={setIdentifier}
 			/>
 
-			{/* Date picker trigger */}
 			<Pressable
 				style={{ width: "100%" }}
 				onPress={() => setShow(true)}
@@ -146,7 +146,6 @@ export default function AddPiece() {
 				/>
 			</Pressable>
 
-			{/* DateTimePicker component */}
 			{show && (
 				<DateTimePicker
 					value={date}
@@ -159,7 +158,6 @@ export default function AddPiece() {
 				/>
 			)}
 
-			{/* Autocomplete fields */}
 			<Autocomplete
 				label="Hospital"
 				options={["Hospital Angeles", "DEL SOL"]}
@@ -185,14 +183,13 @@ export default function AddPiece() {
 				value={pieza}
 			/>
 
-			{/* Price and Paid checkbox */}
 			<View style={{ flexDirection: 'row', alignItems: 'center', width: '100%', gap: 8 }}>
 				<View style={{ flex: 1 }}>
 					<TextInput
-						label="Precio"
-						keyboardType="numeric"
-						value={precio}
-						onChangeText={setPrecio}
+					label="Precio"
+					keyboardType="numeric"
+					value={precio}
+					onChangeText={setPrecio}
 					/>
 				</View>
 				<Checkbox
@@ -200,11 +197,10 @@ export default function AddPiece() {
 					onPress={() => setPaid(!paid)}
 					color="#6200ee"
 					uncheckedColor="#999"
-					testID="checkbox-paid"
 				/>
+				<Text variant="bodyLarge">Pagado</Text>
 			</View>
 
-			{/* Factura checkbox */}
 			<View style={{ flexDirection: 'row', alignItems: 'center', width: '100%', gap: 8 }}>
 				<Checkbox
 					status={factura ? 'checked' : 'unchecked'}
@@ -215,7 +211,6 @@ export default function AddPiece() {
 				<Text variant="bodyLarge">Factura</Text>
 			</View>
 
-			{/* Aseguranza checkbox */}
 			<View style={{ flexDirection: 'row', alignItems: 'center', width: '100%', gap: 8 }}>
 				<Checkbox
 					status={aseguranza ? 'checked' : 'unchecked'}
@@ -226,7 +221,16 @@ export default function AddPiece() {
 				<Text variant="bodyLarge">Aseguranza</Text>
 			</View>
 
-			{/* Progress status chips centered and selectable */}
+			<View style={{ flexDirection: 'row', alignItems: 'center', width: '100%', gap: 8 }}>
+				<Checkbox
+					status={paidWithCard ? 'checked' : 'unchecked'}
+					onPress={() => setPaidWithCard(!paidWithCard)}
+					color="#6200ee"
+					uncheckedColor="#999"
+				/>
+				<Text variant="bodyLarge">Pagado con tarjeta</Text>
+			</View>
+
 			<View
 				style={{
 					flexDirection: 'row',
@@ -254,7 +258,6 @@ export default function AddPiece() {
 				</Chip>
 			</View>
 
-			{/* Submit button */}
 			<Button
 				mode="contained"
 				style={{ marginTop: 16 }}
