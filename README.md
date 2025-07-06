@@ -1,97 +1,114 @@
-This is a new [**React Native**](https://reactnative.dev) project, bootstrapped using [`@react-native-community/cli`](https://github.com/react-native-community/cli).
+# 🧬 arenasCRM — Clinical Specimen Tracking & Cash Flow Control System (Alpha)
 
-# Getting Started
+**arenasCRM** is a specialized mobile application built for pathology clinics, currently developed for Dr. Jorge Carlos Arenas, a renowned pathologist in Ciudad Juárez. It serves as a digital solution to register and monitor every specimen received, track monetary flow, and access historical case data efficiently.
 
-> **Note**: Make sure you have completed the [Set Up Your Environment](https://reactnative.dev/docs/set-up-your-environment) guide before proceeding.
+This project is currently in **alpha**, and under active development.
 
-## Step 1: Start Metro
+---
 
-First, you will need to run **Metro**, the JavaScript build tool for React Native.
+## 📱 Screenshots
 
-To start the Metro dev server, run the following command from the root of your React Native project:
+> *(Replace these with real screenshots once available)*
 
-```sh
-# Using npm
-npm start
+- New specimen entry  
+- Case details view  
+- Pending payment tracking  
+- Search and retrieval of previous cases  
 
-# OR using Yarn
-yarn start
+![Specimen Entry](./screenshots/specimen-entry.png)
+![Case Details](./screenshots/case-details.png)
+
+---
+
+## 🚀 Key Features (Alpha)
+
+- 📦 Register each specimen from reception to delivery
+- 👤 Store patient name, description, and notes
+- 💵 Track pending payments and incoming cash flow
+- 🔍 Search old records quickly for on-demand report requests
+- ☁️ Cloud-based backend (in progress, currently local)
+- 📲 Android mobile application (iOS-ready with React Native)
+- 🛡️ Backend includes authentication and role logic (frontend integration pending)
+
+---
+
+## 🧪 Tech Stack
+
+| Layer        | Technology                |
+| ------------ | ------------------------- |
+| Frontend     | React Native              |
+| Backend      | Go (custom logic)         |
+| Architecture | Based on `LivePreview`    |
+| Storage      | Local for now (VPS ready) |
+| Design       | Mobile-first, user-focused|
+
+---
+
+## 💼 Business Context & Problem Solved
+
+In local pathology clinics — especially in Ciudad Juárez — it’s uncommon to find digital systems even for basic operations. Many professionals still rely on Excel or paper-based records.
+
+**arenasCRM** brings organization and structure to processes that were previously chaotic, making it easier for doctors to track both specimens and finances. This was especially valuable for Dr. Arenas, who needed to:
+
+- Know how much money was flowing in or owed
+- Locate past cases quickly when follow-up reports were requested
+- Replace fragmented Excel workflows with a central, simple system
+
+Even in this early stage, the app introduces digital order in an industry often underserved by modern software.
+
+---
+
+## 🎯 Vision & Roadmap
+
+This is more than a demo — it's a foundation for something scalable.
+
+Future milestones include:
+
+- ✅ Full frontend integration of roles and authentication
+- 🔔 Smart notifications for pending payments or overdue pieces
+- 🔄 Cloud sync and backup for multiple users or clinics
+- 🧾 PDF export or case summaries
+- 📤 API for future clinic system integrations
+
+arenasCRM is expected to grow from a tailored alpha into a broader product offering for more pathology professionals.
+
+---
+
+## 👨‍💻 Development Notes
+
+- Project is fully developed by [@gamequic](https://github.com/gamequic)
+- Built from scratch using proven architecture from `LivePreview`
+- Backend is complete and tested; frontend is ongoing
+- Active maintenance and client feedback loop in place
+
+---
+
+## 📦 Getting Started (Alpha - Dev Mode)
+
+- Clone the repository
+```
+git clone https://github.com/gamequic/arenascrm.git
+cd arenascrm
 ```
 
-## Step 2: Build and run your app
-
-With Metro running, open a new terminal window/pane from the root of your React Native project, and use one of the following commands to build and run your Android or iOS app:
-
-### Android
-
-```sh
-# Using npm
-npm run android
-
-# OR using Yarn
-yarn android
+- Start development server (React Native)
+```
+npm install
+npx react-native start
 ```
 
-### iOS
-
-For iOS, remember to install CocoaPods dependencies (this only needs to be run on first clone or after updating native deps).
-
-The first time you create a new project, run the Ruby bundler to install CocoaPods itself:
-
-```sh
-bundle install
+- Run on Android
+```
+npx react-native run-android
 ```
 
-Then, and every time you update your native dependencies, run:
 
-```sh
-bundle exec pod install
-```
+# 📬 Contact
+Want to collaborate or learn more?
 
-For more information, please visit [CocoaPods Getting Started guide](https://guides.cocoapods.org/using/getting-started.html).
+[GitHub @gamequic](https://github.com/gamequic)
 
-```sh
-# Using npm
-npm run ios
+[Portfolio](https://calleros.dev)
 
-# OR using Yarn
-yarn ios
-```
-
-If everything is set up correctly, you should see your new app running in the Android Emulator, iOS Simulator, or your connected device.
-
-This is one way to run your app — you can also build it directly from Android Studio or Xcode.
-
-## Step 3: Modify your app
-
-Now that you have successfully run the app, let's make changes!
-
-Open `App.tsx` in your text editor of choice and make some changes. When you save, your app will automatically update and reflect these changes — this is powered by [Fast Refresh](https://reactnative.dev/docs/fast-refresh).
-
-When you want to forcefully reload, for example to reset the state of your app, you can perform a full reload:
-
-- **Android**: Press the <kbd>R</kbd> key twice or select **"Reload"** from the **Dev Menu**, accessed via <kbd>Ctrl</kbd> + <kbd>M</kbd> (Windows/Linux) or <kbd>Cmd ⌘</kbd> + <kbd>M</kbd> (macOS).
-- **iOS**: Press <kbd>R</kbd> in iOS Simulator.
-
-## Congratulations! :tada:
-
-You've successfully run and modified your React Native App. :partying_face:
-
-### Now what?
-
-- If you want to add this new React Native code to an existing application, check out the [Integration guide](https://reactnative.dev/docs/integration-with-existing-apps).
-- If you're curious to learn more about React Native, check out the [docs](https://reactnative.dev/docs/getting-started).
-
-# Troubleshooting
-
-If you're having issues getting the above steps to work, see the [Troubleshooting](https://reactnative.dev/docs/troubleshooting) page.
-
-# Learn More
-
-To learn more about React Native, take a look at the following resources:
-
-- [React Native Website](https://reactnative.dev) - learn more about React Native.
-- [Getting Started](https://reactnative.dev/docs/environment-setup) - an **overview** of React Native and how setup your environment.
-- [Learn the Basics](https://reactnative.dev/docs/getting-started) - a **guided tour** of the React Native **basics**.
-- [Blog](https://reactnative.dev/blog) - read the latest official React Native **Blog** posts.
-- [`@facebook/react-native`](https://github.com/facebook/react-native) - the Open Source; GitHub **repository** for React Native.
+# 🛑 Disclaimer
+This project is in alpha and built for internal clinical use only. It does not store real patient data in the demo. All names, examples, and functionality are either mock or based on controlled input.
