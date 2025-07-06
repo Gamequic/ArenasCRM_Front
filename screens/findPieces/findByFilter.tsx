@@ -17,7 +17,6 @@ import Autocomplete from "../../components/Autocomplete";
 const service = new PiecesService();
 
 export default function FindPiece() {
-  // Estados y funciones igual
   const [activeFilters, setActiveFilters] = useState<string[]>([]);
   const [publicId, setPublicId] = useState('');
   const [date, setDate] = useState<Date | null>(null);
@@ -82,37 +81,22 @@ export default function FindPiece() {
     }
   };
 
-  // Cálculos para el resumen
   const totalGanado = results.reduce((sum, item) => sum + (item.Price || 0), 0);
-  const totalPagado = results.reduce(
-    (sum, item) => sum + ((item.IsPaid ? item.Price : 0) || 0),
-    0
-  );
-  const totalPorCobrar = results.reduce(
-    (sum, item) => sum + ((!item.IsPaid ? item.Price : 0) || 0),
-    0
-  );
-  const totalEfectivo = results.reduce(
-    (sum, item) => sum + ((!item.PaidWithCard ? item.Price : 0) || 0),
-    0
-  );
-  const totalTarjeta = results.reduce(
-    (sum, item) => sum + ((item.PaidWithCard ? item.Price : 0) || 0),
-    0
-  );
+  const totalPagado = results.reduce((sum, item) => sum + ((item.IsPaid ? item.Price : 0) || 0), 0);
+  const totalPorCobrar = results.reduce((sum, item) => sum + ((!item.IsPaid ? item.Price : 0) || 0), 0);
+  const totalEfectivo = results.reduce((sum, item) => sum + ((!item.PaidWithCard ? item.Price : 0) || 0), 0);
+  const totalTarjeta = results.reduce((sum, item) => sum + ((item.PaidWithCard ? item.Price : 0) || 0), 0);
 
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === "ios" ? "padding" : undefined}
       style={{ flex: 1 }}
     >
-      <ScrollView
-        contentContainerStyle={{ padding: 16, gap: 8 }}
-        keyboardShouldPersistTaps="handled"
-      >
-        <Text variant="titleMedium">Buscar por:</Text>
+      <View style={{ flex: 1 }}>
 
-        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
+        <Text variant="titleMedium" style={{marginTop: 12, marginHorizontal: 8}}>Buscar por:</Text>
+
+        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, margin: 8 }}>
           {[
             "Identificador", "Fecha", "Rango de fechas", "Hospital", "Medico", "Paciente"
           ].map((label) => (
@@ -245,50 +229,56 @@ export default function FindPiece() {
           />
         )}
 
-        <Button mode="contained" onPress={handleSearch} style={{ marginTop: 12 }}>
+        <Button mode="contained" onPress={handleSearch} style={{ marginTop: 12, marginHorizontal: 8 }}>
           🔍 Buscar
         </Button>
 
-        <FlatList
-          data={results}
-          keyExtractor={(item, index) => item.id?.toString() || index.toString()}
-          renderItem={({ item }) => (
-            <View
-              style={{
-                marginVertical: 8,
-                padding: 12,
-                backgroundColor: "#f5f5f5",
-                borderRadius: 8,
-              }}
-            >
-              <Text variant="titleMedium">ID: {item.PublicId}</Text>
-              <Text>Fecha: {item.date}</Text>
-              <Text>Hospital: {item.Hospital}</Text>
-              <Text>Medico: {item.Medico}</Text>
-              <Text>Paciente: {item.Paciente}</Text>
-              <Text>Pieza: {item.Pieza}</Text>
-              <Text>Precio: ${item.Price?.toFixed(2)}</Text>
-              <Text>Pagado: {item.IsPaid ? "✅" : "❌"}</Text>
-              <Text>Factura: {item.IsFactura ? "✅" : "❌"}</Text>
-              <Text>Aseguranza: {item.IsAseguranza ? "✅" : "❌"}</Text>
-              <Text>Tarjeta: {item.PaidWithCard ? "✅" : "❌"}</Text>
-            </View>
-          )}
-          ListEmptyComponent={
-            <Text style={{ marginTop: 16, textAlign: "center" }}>
-              No se encontraron piezas.
-            </Text>
-          }
-          style={{ maxHeight: 400 }}
-        />
+        <ScrollView
+          contentContainerStyle={{ padding: 16, gap: 8, paddingBottom: 0 }}
+          keyboardShouldPersistTaps="handled"
+        >
+          <View style={{ marginTop: 16 }}>
+            <FlatList
+              data={results}
+              keyExtractor={(item, index) => item.id?.toString() || index.toString()}
+              renderItem={({ item }) => (
+                <View
+                  style={{
+                    marginVertical: 8,
+                    padding: 12,
+                    backgroundColor: "#f5f5f5",
+                    borderRadius: 8,
+                  }}
+                >
+                  <Text variant="titleMedium">ID: {item.PublicId}</Text>
+                  <Text>Fecha: {item.date}</Text>
+                  <Text>Hospital: {item.Hospital}</Text>
+                  <Text>Medico: {item.Medico}</Text>
+                  <Text>Paciente: {item.Paciente}</Text>
+                  <Text>Pieza: {item.Pieza}</Text>
+                  <Text>Precio: ${item.Price?.toFixed(2)}</Text>
+                  <Text>Pagado: {item.IsPaid ? "✅" : "❌"}</Text>
+                  <Text>Factura: {item.IsFactura ? "✅" : "❌"}</Text>
+                  <Text>Aseguranza: {item.IsAseguranza ? "✅" : "❌"}</Text>
+                  <Text>Tarjeta: {item.PaidWithCard ? "✅" : "❌"}</Text>
+                </View>
+              )}
+              ListEmptyComponent={
+                <Text style={{ marginTop: 16, textAlign: "center" }}>
+                  No se encontraron piezas.
+                </Text>
+              }
+            />
+          </View>
+        </ScrollView>
 
-        {/* Resumen de totales */}
+        {/* --- RESUMEN DE PAGOS --- */}
         <View
           style={{
-            marginTop: 24,
             padding: 16,
             backgroundColor: "#e0e0e0",
-            borderRadius: 8,
+            borderTopWidth: 1,
+            borderColor: "#ccc",
           }}
         >
           <Text variant="titleMedium" style={{ marginBottom: 8 }}>
@@ -300,7 +290,7 @@ export default function FindPiece() {
           <Text>Total efectivo: ${totalEfectivo.toFixed(2)}</Text>
           <Text>Total tarjeta: ${totalTarjeta.toFixed(2)}</Text>
         </View>
-      </ScrollView>
+      </View>
     </KeyboardAvoidingView>
   );
 }
