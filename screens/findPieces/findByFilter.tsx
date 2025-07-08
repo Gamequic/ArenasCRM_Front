@@ -233,44 +233,39 @@ export default function FindPiece() {
           🔍 Buscar
         </Button>
 
-        <ScrollView
+        <FlatList
           contentContainerStyle={{ padding: 16, gap: 8, paddingBottom: 0 }}
+          data={results}
+          keyExtractor={(item, index) => item.id?.toString() || index.toString()}
           keyboardShouldPersistTaps="handled"
-        >
-          <View style={{ marginTop: 16 }}>
-            <FlatList
-              data={results}
-              keyExtractor={(item, index) => item.id?.toString() || index.toString()}
-              renderItem={({ item }) => (
-                <View
-                  style={{
-                    marginVertical: 8,
-                    padding: 12,
-                    backgroundColor: "#f5f5f5",
-                    borderRadius: 8,
-                  }}
-                >
-                  <Text variant="titleMedium">ID: {item.PublicId}</Text>
-                  <Text>Fecha: {item.date}</Text>
-                  <Text>Hospital: {item.Hospital}</Text>
-                  <Text>Medico: {item.Medico}</Text>
-                  <Text>Paciente: {item.Paciente}</Text>
-                  <Text>Pieza: {item.Pieza}</Text>
-                  <Text>Precio: ${item.Price?.toFixed(2)}</Text>
-                  <Text>Pagado: {item.IsPaid ? "✅" : "❌"}</Text>
-                  <Text>Factura: {item.IsFactura ? "✅" : "❌"}</Text>
-                  <Text>Aseguranza: {item.IsAseguranza ? "✅" : "❌"}</Text>
-                  <Text>Tarjeta: {item.PaidWithCard ? "✅" : "❌"}</Text>
-                </View>
-              )}
-              ListEmptyComponent={
-                <Text style={{ marginTop: 16, textAlign: "center" }}>
-                  No se encontraron piezas.
-                </Text>
-              }
-            />
-          </View>
-        </ScrollView>
+          ListEmptyComponent={
+            <Text style={{ marginTop: 16, textAlign: "center" }}>
+              No se encontraron piezas.
+            </Text>
+          }
+          renderItem={({ item }) => (
+            <View
+              style={{
+                marginVertical: 8,
+                padding: 12,
+                backgroundColor: "#f5f5f5",
+                borderRadius: 8,
+              }}
+            >
+              <Text variant="titleMedium">ID: {item.PublicId}</Text>
+              <Text>Fecha: {item.date}</Text>
+              <Text>Hospital: {item.Hospital}</Text>
+              <Text>Medico: {item.Medico}</Text>
+              <Text>Paciente: {item.Paciente}</Text>
+              <Text>Pieza: {item.Pieza}</Text>
+              <Text>Precio: ${item.Price?.toFixed(2)}</Text>
+              <Text>Pagado: {item.IsPaid ? "✅" : "❌"}</Text>
+              <Text>Factura: {item.IsFactura ? "✅" : "❌"}</Text>
+              <Text>Aseguranza: {item.IsAseguranza ? "✅" : "❌"}</Text>
+              <Text>Tarjeta: {item.PaidWithCard ? "✅" : "❌"}</Text>
+            </View>
+          )}
+        />
 
         {/* --- RESUMEN DE PAGOS --- */}
         <View
