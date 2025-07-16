@@ -1,15 +1,18 @@
 import React, { useState, useEffect } from "react";
 import { View, FlatList, TouchableOpacity, Text } from "react-native";
-import { TextInput } from "react-native-paper";
+import { TextInput, useTheme } from "react-native-paper";
 
 type AutocompleteProps = {
+	icon: string,
 	label: string;
 	options: string[];
 	value: string;
 	onSelect: (value: string) => void;
 };
 
-export default function Autocomplete({ label, options, value, onSelect }: AutocompleteProps) {
+export default function Autocomplete({ icon, label, options, value, onSelect }: AutocompleteProps) {
+	const { colors } = useTheme();
+	
 	const [query, setQuery] = useState(value);
 	const [filteredOptions, setFilteredOptions] = useState<string[]>([]);
 	const [showOptions, setShowOptions] = useState(false);
@@ -45,6 +48,11 @@ export default function Autocomplete({ label, options, value, onSelect }: Autoco
 				label={label}
 				value={query}
 				onChangeText={handleChange}
+				mode="outlined"
+				style={{backgroundColor: colors.surface}}
+				textColor={colors.onSurface}
+				activeOutlineColor={colors.primary}
+				left={icon ? <TextInput.Icon icon={icon} /> : undefined}
 			/>
 
 			{showOptions && filteredOptions.length > 0 && (

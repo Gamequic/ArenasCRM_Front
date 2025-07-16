@@ -7,7 +7,7 @@ import {
   ScrollView,
   KeyboardAvoidingView,
 } from "react-native";
-import { TextInput, Button, Text, Chip } from "react-native-paper";
+import { TextInput, Button, Text, Chip, useTheme } from "react-native-paper";
 import DateTimePicker from "@react-native-community/datetimepicker";
 
 // Project imports
@@ -17,6 +17,8 @@ import Autocomplete from "../../components/Autocomplete";
 const service = new PiecesService();
 
 export default function FindPiece() {
+  const { colors } = useTheme();
+
   const [activeFilters, setActiveFilters] = useState<string[]>([]);
   const [publicId, setPublicId] = useState('');
   const [date, setDate] = useState<Date | null>(null);
@@ -92,7 +94,7 @@ export default function FindPiece() {
       behavior={Platform.OS === "ios" ? "padding" : undefined}
       style={{ flex: 1 }}
     >
-      <View style={{ flex: 1 }}>
+      <View style={{ flex: 1, backgroundColor: colors.background }}>
 
         <Text variant="titleMedium" style={{marginTop: 12, marginHorizontal: 8}}>Buscar por:</Text>
 
