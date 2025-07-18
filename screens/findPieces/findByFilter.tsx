@@ -9,6 +9,9 @@ import {
 } from "react-native";
 import { TextInput, Button, Text, Chip, useTheme } from "react-native-paper";
 import DateTimePicker from "@react-native-community/datetimepicker";
+import { useForm, Controller } from 'react-hook-form';
+import { yupResolver } from '@hookform/resolvers/yup';
+import * as yup from 'yup';
 
 // Project imports
 import PiecesService from "../../services/pieces.service";
@@ -54,27 +57,34 @@ export default function FindPiece() {
 
   const handleSearch = async () => {
     try {
-      const filters: any = {
-        publicId,
-        date: formatDate(date),
-        startDate: formatDate(startDate),
-        endDate: formatDate(endDate),
-        hospital,
-        medico,
-        paciente,
-        isPaid,
-        isFactura,
-        isAseguranza,
-        paidWithCard,
-      };
+      const filters: any = {};
 
-      Object.keys(filters).forEach(key => {
-        if (!filters[key]) delete filters[key];
-      });
+      if (activeFilters.includes("Identificador") && publicId) {
+        filters.publicId = publicId;
+      }
+      if (activeFilters.includes("Fecha") && date) {
+        filters.date = formatDate(date);
+      }
+      if (activeFilters.includes("Rango de fechas")) {
+        if (startDate) filters.startDate = formatDate(startDate);
+        if (endDate) filters.endDate = formatDate(endDate);
+      }
+      if (activeFilters.includes("Hospital") && hospital) {
+        filters.hospital = hospital;
+      }
+      if (activeFilters.includes("Medico") && medico) {
+        filters.medico = medico;
+      }
+      if (activeFilters.includes("Paciente") && paciente) {
+        filters.paciente = paciente;
+      }
+
+      if (isPaid !== null) filters.isPaid = isPaid;
+      if (isFactura !== null) filters.isFactura = isFactura;
+      if (isAseguranza !== null) filters.isAseguranza = isAseguranza;
+      if (paidWithCard !== null) filters.paidWithCard = paidWithCard;
 
       const data = await service.find(filters);
-      console.log(filters);
-      console.log(data);
 
       setResults(Array.isArray(data) ? data : []);
     } catch (error) {
@@ -82,6 +92,50 @@ export default function FindPiece() {
       setResults([]);
     }
   };
+
+  const schema = yup.object().shape({
+    identifier: yup
+      .string()
+      .required('El identificador es obligatorio')
+      .matches(/^\d+$/, 'Debe contener solo números'),
+    precio: yup
+      .string()
+      .required('El precio es obligatorio')
+      .test('is-positive-number', 'Debe ser un número positivo', value => {
+        if (!value) return false;
+        const num = Number(value);
+        return !isNaN(num) && num > 0;
+      }),
+    Hospital: yup
+      .string()
+      .required("El hospital es obligatorio"),
+    Medico: yup
+      .string()
+      .required("El medico es obligatorio"),
+    Paciente: yup
+      .string()
+      .required("El paciente es obligatorio"),
+    Pieza: yup
+      .string()
+      .required("El pieza es obligatorio")
+  });
+
+  const {
+    control,
+    handleSubmit,
+    reset,
+    setError,
+    formState: { errors },
+  } = useForm({
+    resolver: yupResolver(schema),
+    defaultValues: {
+      Hospital: "",
+      Medico: "",
+      Paciente: "",
+      Pieza: "",
+    },
+  });
+
 
   const totalGanado = results.reduce((sum, item) => sum + (item.Price || 0), 0);
   const totalPagado = results.reduce((sum, item) => sum + ((item.IsPaid ? item.Price : 0) || 0), 0);
@@ -206,28 +260,37 @@ export default function FindPiece() {
 
         {activeFilters.includes("Hospital") && (
           <Autocomplete
+            control={control}
+            error={errors.Hospital}
             label="Hospital"
             options={["Hospital Angeles", "DEL SOL"]}
             onSelect={setHospital}
             value={hospital}
+            icon="hospital-building"
           />
         )}
 
         {activeFilters.includes("Medico") && (
           <Autocomplete
+            control={control}
+            error={errors.Medico}
             label="Medico"
             options={["DRA GALVAN", "DR NAJERA", "DR DIAZ"]}
             onSelect={setMedico}
             value={medico}
+            icon="doctor"
           />
         )}
 
         {activeFilters.includes("Paciente") && (
           <Autocomplete
+            control={control}
+            error={errors.Paciente}
             label="Paciente"
             options={["Lopez Perez Antonio", "Rivera Lopez Andrea"]}
             onSelect={setPaciente}
             value={paciente}
+            icon="account"
           />
         )}
 
@@ -255,7 +318,7 @@ export default function FindPiece() {
               }}
             >
               <Text variant="titleMedium">ID: {item.PublicId}</Text>
-              <Text>Fecha: {item.date}</Text>
+              <Text>Fecha: {new Date(item.Date).toLocaleDateString("es-MX").replaceAll('/', '-')}</Text>
               <Text>Hospital: {item.Hospital}</Text>
               <Text>Medico: {item.Medico}</Text>
               <Text>Paciente: {item.Paciente}</Text>

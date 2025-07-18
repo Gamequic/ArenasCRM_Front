@@ -78,19 +78,19 @@ export default function AddPiece() {
 		}
 
 		// Clean all data
-		// setIdentifier('');
-		// setDate(new Date());
-		// setHospital('');
-		// setMedico('');
-		// setPaciente('');
-		// setPieza('');
-		// setPrecio('');
-		// setPaid(false);
-		// setFactura(false);
-		// setAseguranza(false);
-		// setPaidWithCard(false);
-		// setProgressStatus('En proceso');
-		// reset();
+		setIdentifier('');
+		setDate(new Date());
+		setHospital('');
+		setMedico('');
+		setPaciente('');
+		setPieza('');
+		setPrecio('');
+		setPaid(false);
+		setFactura(false);
+		setAseguranza(false);
+		setPaidWithCard(false);
+		setProgressStatus('En proceso');
+		reset();
 
 		// Show feed back to user
 		setSuccessVisible(true);
