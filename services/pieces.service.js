@@ -7,8 +7,9 @@ class PiecesService {
       const response = await axios.post('http://10.0.2.2:8080/api/pieces/', body);
       return response.data;
     } catch (error) {
-      console.error("Error in create:", error.response ? error.response.data : error.message);
-      throw error;
+      const errMsg = error?.response?.data || error.message;
+      console.error("Error in create:", errMsg);
+      throw new Error(errMsg);
     }
   }
 

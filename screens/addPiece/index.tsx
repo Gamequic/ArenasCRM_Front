@@ -1,8 +1,11 @@
 import React, { useState } from "react";
 import { View, Platform, Pressable, ScrollView } from "react-native";
-import { TextInput, Text, Button, useTheme, SegmentedButtons } from "react-native-paper";
+import { TextInput, Text, Button, useTheme, SegmentedButtons, HelperText, Modal, Portal, IconButton } from "react-native-paper";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import Icon from "react-native-paper/src/components/Icon";
+import { useForm, Controller } from 'react-hook-form';
+import { yupResolver } from '@hookform/resolvers/yup';
+import * as yup from 'yup';
 
 // Project imports
 import PiecesService from "../../services/pieces.service";
@@ -13,6 +16,8 @@ const service = new PiecesService();
 
 export default function AddPiece() {
 	const { colors } = useTheme();
+
+	const [successVisible, setSuccessVisible] = useState(false);
 
 	// Step 1: Form field states
 	const [identifier, setIdentifier] = useState('');
@@ -34,30 +39,105 @@ export default function AddPiece() {
 	const [progressStatus, setProgressStatus] = useState('En proceso');
 
 	// Format date for backend: YYYY-MM-DD
-	const formattedDate = date.toISOString().split("T")[0];
+	const formattedDate = new Date(date).toISOString(); 
 
 	// Step 4: Gather form data and log JSON
-	const handleSubmit = async () => {
+	const onSubmit = async () => {
+		const data = {
+			PublicId: parseInt(identifier),
+			date: formattedDate,
+			Hospital: hospital,
+			Medico: medico,
+			Paciente: paciente,
+			Pieza: pieza,
+			Price: parseFloat(precio),
+			IsPaid: paid,
+			IsFactura: factura,
+			IsAseguranza: aseguranza,
+			PaidWithCard: paidWithCard,
+			Status: progressStatus,
+		};
+
+		console.log("Sending data:", data);
+
 		try {
-			const data = {
-				PublicId: parseInt(identifier),       // Enviar como número
-				Date: formattedDate,
-				Hospital: hospital,
-				Medico: medico,
-				Paciente: paciente,
-				Pieza: pieza,
-				Price: parseFloat(precio),           // Convertido a float
-				IsPaid: paid,
-				IsFactura: factura,
-				IsAseguranza: aseguranza,
-				PaidWithCard: paidWithCard,
-				Status: progressStatus,
-			};
 			await service.create(data);
 		} catch (error) {
-			console.error("Failed to create piece:", error);
+			if (error instanceof Error) {
+				console.error("Failed to create piece:", error.message);
+				if (error.message === "PublicId must be unique\n") {
+					setError("identifier", {
+						type: "manual",
+						message: "El Identificador debe ser único.",
+					});
+				}
+			} else {
+				console.error("Unknown error:", String(error));
+			}
+			return
 		}
+
+		// Clean all data
+		// setIdentifier('');
+		// setDate(new Date());
+		// setHospital('');
+		// setMedico('');
+		// setPaciente('');
+		// setPieza('');
+		// setPrecio('');
+		// setPaid(false);
+		// setFactura(false);
+		// setAseguranza(false);
+		// setPaidWithCard(false);
+		// setProgressStatus('En proceso');
+		// reset();
+
+		// Show feed back to user
+		setSuccessVisible(true);
 	};
+
+	const schema = yup.object().shape({
+		identifier: yup
+			.string()
+			.required('El identificador es obligatorio')
+			.matches(/^\d+$/, 'Debe contener solo números'),
+		precio: yup
+			.string()
+			.required('El precio es obligatorio')
+			.test('is-positive-number', 'Debe ser un número positivo', value => {
+				if (!value) return false;
+				const num = Number(value);
+				return !isNaN(num) && num > 0;
+			}),
+		Hospital: yup
+			.string()
+			.required("El hospital es obligatorio"),
+		Medico: yup
+			.string()
+			.required("El medico es obligatorio"),
+		Paciente: yup
+			.string()
+			.required("El paciente es obligatorio"),
+		Pieza: yup
+			.string()
+			.required("El pieza es obligatorio")
+	});
+
+	const {
+		control,
+		handleSubmit,
+		reset,
+		setError,
+		formState: { errors },
+	} = useForm({
+		resolver: yupResolver(schema),
+		defaultValues: {
+			Hospital: "",
+			Medico: "",
+			Paciente: "",
+			Pieza: "",
+		},
+	});
 
 	const styles = {
 		card: {
@@ -68,6 +148,7 @@ export default function AddPiece() {
 	}
 
 	return (
+		<>
 		<ScrollView 
 			contentContainerStyle={{
 				paddingVertical: 32,
@@ -107,17 +188,28 @@ export default function AddPiece() {
 					</View>
 
 					<View style={{padding: 12, gap: 8}}>
-						<TextInput
-							label="Identificador"
-							keyboardType="numeric"
-							value={identifier}
-							onChangeText={setIdentifier}
-							mode="outlined"
-							style={{backgroundColor: colors.surface}}
-							textColor={colors.onSurface}
-							activeOutlineColor={colors.primary}
-							left={<TextInput.Icon icon={"bookmark-outline"} />}
+						<Controller
+							control={control}
+							name="identifier"
+							defaultValue=""
+							render={({ field: { onChange, onBlur, value } }) => (
+								<TextInput
+									label="Identificador"
+									value={value}
+									onChangeText={(e) => {onChange(e); setIdentifier(e)}}
+									onBlur={onBlur}
+									error={!!errors.identifier}
+									mode="outlined"
+									style={{backgroundColor: colors.surface}}
+									textColor={colors.onSurface}
+									activeOutlineColor={colors.primary}
+								/>
+							)}
 						/>
+						{errors.identifier && (
+							<HelperText type="error">{errors.identifier.message}</HelperText>
+						)}
+
 
 						<Pressable
 							style={{ width: "100%" }}
@@ -150,7 +242,7 @@ export default function AddPiece() {
 					</View>
 				</View>
 
-				<View style={{overflow: 'hidden', ...styles.card}}>
+				<View style={{overflow: 'visible', ...styles.card}}>
 					<View
 						style={{
 							backgroundColor: colors.inversePrimary,
@@ -160,6 +252,8 @@ export default function AddPiece() {
 							alignItems: 'center',
 							justifyContent: 'flex-start',
 							gap: 8,
+							borderTopEndRadius: 12,
+							borderTopStartRadius: 12,
 						}}
 						>
 						<Icon source="hospital-building" size={28} color={colors.onSurface} />
@@ -177,6 +271,8 @@ export default function AddPiece() {
 
 					<View style={{padding: 12, gap: 8}}>
 						<Autocomplete
+							control={control}
+							error={errors.Hospital}
 							label="Hospital"
 							options={["Hospital Angeles", "DEL SOL"]}
 							onSelect={setHospital}
@@ -184,6 +280,8 @@ export default function AddPiece() {
 							icon="hospital-building"
 						/>
 						<Autocomplete
+							control={control}
+							error={errors.Medico}
 							label="Medico"
 							options={["DRA GALVAN", "DR NAJERA", "DR DIAZ"]}
 							onSelect={setMedico}
@@ -191,6 +289,8 @@ export default function AddPiece() {
 							icon="doctor"
 						/>
 						<Autocomplete
+							control={control}
+							error={errors.Paciente}
 							label="Paciente"
 							options={["Lopez Perez Antonio", "Rivera Lopez Andrea"]}
 							onSelect={setPaciente}
@@ -198,6 +298,8 @@ export default function AddPiece() {
 							icon="account"
 						/>
 						<Autocomplete
+							control={control}
+							error={errors.Pieza}
 							label="Pieza"
 							options={["Biopsia de Higado", "Biopsia endoscopia"]}
 							onSelect={setPieza}
@@ -207,7 +309,7 @@ export default function AddPiece() {
 					</View>
 				</View>
 
-				<View style={{overflow: 'hidden', ...styles.card}}>
+				<View style={{overflow: 'visible', ...styles.card}}>
 					<View
 						style={{
 							backgroundColor: colors.inversePrimary,
@@ -217,6 +319,8 @@ export default function AddPiece() {
 							alignItems: 'center',
 							justifyContent: 'flex-start',
 							gap: 8,
+							borderTopEndRadius: 12,
+							borderTopStartRadius: 12,
 						}}
 						>
 						<Icon source="cash" size={28} color={colors.onSurface} />
@@ -235,17 +339,28 @@ export default function AddPiece() {
 					<View style={{padding: 12}}>
 						<View style={{ flexDirection: 'row', alignItems: 'center', width: '100%', gap: 8 }}>
 							<View style={{ flex: 1 }}>
-								<TextInput
-									label="Precio"
-									keyboardType="numeric"
-									value={precio}
-									onChangeText={setPrecio}
-									mode="outlined"
-									style={{backgroundColor: colors.surface}}
-									textColor={colors.onSurface}
-									activeOutlineColor={colors.primary}
-									left={<TextInput.Icon icon={"currency-usd"} />}
+								<Controller
+									control={control}
+									name="precio"
+									defaultValue=""
+									render={({ field: { onChange, onBlur, value } }) => (
+										<TextInput
+											label="Precio"
+											value={value}
+											onChangeText={(e) => {onChange(e) ; setPrecio(e)}}
+											onBlur={onBlur}
+											keyboardType="numeric"
+											error={!!errors.precio}
+											mode="outlined"
+											style={{backgroundColor: colors.surface}}
+											textColor={colors.onSurface}
+											activeOutlineColor={colors.primary}
+										/>
+									)}
 								/>
+								{errors.precio && (
+								<HelperText type="error">{errors.precio.message}</HelperText>
+								)}
 							</View>
 						</View>
 
@@ -352,12 +467,44 @@ export default function AddPiece() {
 				<Button
 					mode="contained"
 					style={{ marginTop: 16, backgroundColor: colors.primary, zIndex: 1, top: 12 }}
-					onPress={handleSubmit}
+					onPress={handleSubmit(onSubmit)}
 				>
 					Añadir pieza
 				</Button>
 			</View>
 
 		</ScrollView>
+
+		<Portal>
+			<Modal
+			visible={successVisible}
+			onDismiss={() => setSuccessVisible(false)}
+			contentContainerStyle={{
+				backgroundColor: colors.primary, // 🎨 color del modal
+				padding: 24,
+				marginHorizontal: 32,
+				borderRadius: 12,
+				alignItems: "center",
+			}}
+			>
+			<IconButton
+				icon="check-circle"
+				size={48}
+				iconColor={colors.onPrimary} // ✅ color del icono sobre fondo primary
+			/>
+			<Text
+				style={{
+				color: colors.onPrimary, // ✅ texto legible sobre fondo
+				fontSize: 18,
+				marginTop: 8,
+				textAlign: "center",
+				fontWeight: "bold",
+				}}
+			>
+				Piece added successfully!
+			</Text>
+			</Modal>
+		</Portal>
+		</>
 	);
 }
