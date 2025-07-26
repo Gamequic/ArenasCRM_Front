@@ -4,10 +4,9 @@ import {
   Platform,
   Pressable,
   FlatList,
-  ScrollView,
   KeyboardAvoidingView,
 } from "react-native";
-import { TextInput, Button, Text, Chip, useTheme } from "react-native-paper";
+import { TextInput, Button, Text, Chip, useTheme, List } from "react-native-paper";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { useForm, Controller } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
@@ -298,39 +297,57 @@ export default function FindPiece() {
           🔍 Buscar
         </Button>
 
-        <FlatList
-          contentContainerStyle={{ padding: 16, gap: 8, paddingBottom: 0 }}
-          data={results}
-          keyExtractor={(item, index) => item.id?.toString() || index.toString()}
-          keyboardShouldPersistTaps="handled"
-          ListEmptyComponent={
-            <Text style={{ marginTop: 16, textAlign: "center" }}>
-              No se encontraron piezas.
-            </Text>
-          }
-          renderItem={({ item }) => (
-            <View
-              style={{
-                marginVertical: 8,
-                padding: 12,
-                backgroundColor: "#f5f5f5",
-                borderRadius: 8,
-              }}
-            >
-              <Text variant="titleMedium">ID: {item.PublicId}</Text>
-              <Text>Fecha: {new Date(item.Date).toLocaleDateString("es-MX").replaceAll('/', '-')}</Text>
-              <Text>Hospital: {item.Hospital}</Text>
-              <Text>Medico: {item.Medico}</Text>
-              <Text>Paciente: {item.Paciente}</Text>
-              <Text>Pieza: {item.Pieza}</Text>
-              <Text>Precio: ${item.Price?.toFixed(2)}</Text>
-              <Text>Pagado: {item.IsPaid ? "✅" : "❌"}</Text>
-              <Text>Factura: {item.IsFactura ? "✅" : "❌"}</Text>
-              <Text>Aseguranza: {item.IsAseguranza ? "✅" : "❌"}</Text>
-              <Text>Tarjeta: {item.PaidWithCard ? "✅" : "❌"}</Text>
-            </View>
-          )}
-        />
+        <List.AccordionGroup>
+          <FlatList
+            contentContainerStyle={{ padding: 16, gap: 8, paddingBottom: 0 }}
+            data={results}
+            keyExtractor={(item, index) => item.id?.toString() || index.toString()}
+            keyboardShouldPersistTaps="handled"
+            ListEmptyComponent={
+              <Text style={{ marginTop: 16, textAlign: "center" }}>
+                No se encontraron piezas.
+              </Text>
+            }
+            renderItem={({ item }) => (
+              <List.Accordion
+                title={item.PublicId + ' - ' + item.Medico}
+                id={item.PublicId}
+                left={props => <List.Icon
+                  {...props}
+                  icon="folder"
+                  color={colors.primary}
+                />}
+                right={props => <List.Icon
+                  {...props}
+                  icon="cash"
+                  color={item.IsPaid ? "#4CAF50" : colors.error}
+                />}
+              >
+                <View
+                  style={{
+                    marginHorizontal: 12,
+                    padding: 12,
+                    backgroundColor: colors.surface,
+                    borderEndEndRadius: 12,
+                    borderStartEndRadius: 12
+                  }}
+                >
+                  <Text variant="titleMedium">ID: {item.PublicId}</Text>
+                  <Text>Fecha: {new Date(item.Date).toLocaleDateString("es-MX").replaceAll('/', '-')}</Text>
+                  <Text>Hospital: {item.Hospital}</Text>
+                  <Text>Medico: {item.Medico}</Text>
+                  <Text>Paciente: {item.Paciente}</Text>
+                  <Text>Pieza: {item.Pieza}</Text>
+                  <Text>Precio: ${item.Price?.toFixed(2)}</Text>
+                  <Text>Pagado: {item.IsPaid ? "✅" : "❌"}</Text>
+                  <Text>Factura: {item.IsFactura ? "✅" : "❌"}</Text>
+                  <Text>Aseguranza: {item.IsAseguranza ? "✅" : "❌"}</Text>
+                  <Text>Tarjeta: {item.PaidWithCard ? "✅" : "❌"}</Text>
+                </View>
+              </List.Accordion>
+            )}
+          />
+        </List.AccordionGroup>
 
         {/* --- RESUMEN DE PAGOS --- */}
         <View
