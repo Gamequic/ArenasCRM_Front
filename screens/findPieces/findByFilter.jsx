@@ -6,8 +6,9 @@ import {
   FlatList,
   KeyboardAvoidingView,
 } from "react-native";
-import { TextInput, Button, Text, Chip, useTheme, List } from "react-native-paper";
+import { TextInput, Button, Text, Chip, useTheme, List, IconButton } from "react-native-paper";
 import DateTimePicker from "@react-native-community/datetimepicker";
+import { useNavigation } from '@react-navigation/native';
 import { useForm, Controller } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
@@ -19,9 +20,10 @@ import Autocomplete from "../../components/Autocomplete";
 const service = new PiecesService();
 
 export default function FindPiece() {
+  const navigation = useNavigation();
   const { colors } = useTheme();
 
-  const [activeFilters, setActiveFilters] = useState<string[]>([]);
+  const [activeFilters, setActiveFilters] = useState([]);
   const [publicId, setPublicId] = useState('');
   const [date, setDate] = useState<Date | null>(null);
   const [startDate, setStartDate] = useState<Date | null>(null);
@@ -36,11 +38,11 @@ export default function FindPiece() {
   const [isAseguranza, setIsAseguranza] = useState<"true" | "false" | null>(null);
   const [paidWithCard, setPaidWithCard] = useState<"true" | "false" | null>(null);
 
-  const [results, setResults] = useState<any[]>([]);
+  const [results, setResults] = useState([]);
 
-  const formatDate = (d: Date | null) => d ? d.toISOString().split("T")[0] : null;
+  const formatDate = (d) => d ? d.toISOString().split("T")[0] : null;
 
-  const toggleFilter = (filter: string) => {
+  const toggleFilter = (filter) => {
     setActiveFilters(prev =>
       prev.includes(filter)
         ? prev.filter(f => f !== filter)
@@ -48,7 +50,7 @@ export default function FindPiece() {
     );
   };
 
-  const cycleBoolean = (current: "true" | "false" | null): "true" | "false" | null => {
+  const cycleBoolean = (current) => {
     if (current === null) return "true";
     if (current === "true") return "false";
     return null;
@@ -56,7 +58,7 @@ export default function FindPiece() {
 
   const handleSearch = async () => {
     try {
-      const filters: any = {};
+      const filters = {};
 
       if (activeFilters.includes("Identificador") && publicId) {
         filters.publicId = publicId;
@@ -310,7 +312,7 @@ export default function FindPiece() {
             }
             renderItem={({ item }) => (
               <List.Accordion
-                title={item.PublicId + ' - ' + item.Medico}
+                title={ <Text>{item.PublicId + ' - ' + item.Medico}</Text> }
                 id={item.PublicId}
                 left={props => <List.Icon
                   {...props}
@@ -329,20 +331,41 @@ export default function FindPiece() {
                     padding: 12,
                     backgroundColor: colors.surface,
                     borderEndEndRadius: 12,
-                    borderStartEndRadius: 12
+                    borderStartEndRadius: 12,
+                    flexDirection: 'row',       // Para poner contenido e icono en fila
+                    justifyContent: 'space-between', // Separar datos y botón
+                    alignItems: 'center',
                   }}
                 >
-                  <Text variant="titleMedium">ID: {item.PublicId}</Text>
-                  <Text>Fecha: {new Date(item.Date).toLocaleDateString("es-MX").replaceAll('/', '-')}</Text>
-                  <Text>Hospital: {item.Hospital}</Text>
-                  <Text>Medico: {item.Medico}</Text>
-                  <Text>Paciente: {item.Paciente}</Text>
-                  <Text>Pieza: {item.Pieza}</Text>
-                  <Text>Precio: ${item.Price?.toFixed(2)}</Text>
-                  <Text>Pagado: {item.IsPaid ? "✅" : "❌"}</Text>
-                  <Text>Factura: {item.IsFactura ? "✅" : "❌"}</Text>
-                  <Text>Aseguranza: {item.IsAseguranza ? "✅" : "❌"}</Text>
-                  <Text>Tarjeta: {item.PaidWithCard ? "✅" : "❌"}</Text>
+                  {/* Contenedor de texto con datos del paciente */}
+                  <View style={{ flex: 1, paddingRight: 8 }}>
+                    <Text variant="titleMedium">ID: {item.PublicId}</Text>
+                    <Text>Fecha: {new Date(item.Date).toLocaleDateString("es-MX").replaceAll('/', '-')}</Text>
+                    <Text>Hospital: {item.Hospital}</Text>
+                    <Text>Medico: {item.Medico}</Text>
+                    <Text>Paciente: {item.Paciente}</Text>
+                    <Text>Pieza: {item.Pieza}</Text>
+                    <Text>Precio: ${item.Price?.toFixed(2)}</Text>
+                    <Text>Pagado: {item.IsPaid ? "✅" : "❌"}</Text>
+                    <Text>Factura: {item.IsFactura ? "✅" : "❌"}</Text>
+                    <Text>Aseguranza: {item.IsAseguranza ? "✅" : "❌"}</Text>
+                    <Text>Tarjeta: {item.PaidWithCard ? "✅" : "❌"}</Text>
+                  </View>
+
+                  {/* Botón editar */}
+                  <IconButton
+                    icon="pencil"
+                    size={24}
+                    onPress={() => {
+                      navigation.navigate('UpdatePiece', {
+                        itemID: item.ID
+                      });
+                    }}
+                    accessibilityLabel={`Editar pieza ${item.PublicId}`}
+                    // opcional: color y estilo para mejor UI
+                    iconColor={colors.primary}
+                    style={{ marginLeft: 8 }}
+                  />
                 </View>
               </List.Accordion>
             )}

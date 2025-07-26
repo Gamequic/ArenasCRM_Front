@@ -16,14 +16,21 @@ import {
   Text,
 } from 'react-native-paper';
 
+import { NavigationContainer } from '@react-navigation/native';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
+
 // Project imports
 import { generateMaterialTheme } from './utils/theme';
 import MainScreen from './screens/main';
 import LogIn from './screens/auth/logIn';
+import UpdatePiece from './screens/updatePiece';
 import { vibrantDarkOverrides, vibrantLightOverrides} from './utils/vibrantOverrides';
 
 // Base color
 const { light, dark } = generateMaterialTheme('#1565C0');
+
+// Stack navigation
+const Stack = createNativeStackNavigator();
 
 export default function App() {
   const [ isLogin, setIsLogin ] = useState(false);
@@ -43,25 +50,28 @@ export default function App() {
   };
 
   return (
-    <SafeAreaProvider>
-      <PaperProvider theme={paperTheme}>
-        <SafeAreaView style={styles.container}>
-          <View style={styles.container}>
-            <StatusBar
-              barStyle={isDark ? 'light-content' : 'dark-content'}
-            />
-            { isLogin ? 
-              <MainScreen />
-              :
-              <LogIn
-                setIsLogin={setIsLogin}
-              />
-            }
-          </View>
-        </SafeAreaView>
-      </PaperProvider>
-    </SafeAreaProvider>
-  );
+  <SafeAreaProvider>
+    <PaperProvider theme={paperTheme}>
+      <SafeAreaView style={{ flex: 1 }}>
+        <NavigationContainer>
+          <StatusBar barStyle={isDark ? 'light-content' : 'dark-content'} />
+          <Stack.Navigator screenOptions={{ headerShown: false }}>
+            {isLogin ? (
+              <>
+                <Stack.Screen name="MainTabs" component={MainScreen} />
+                <Stack.Screen name="UpdatePiece" component={UpdatePiece} />
+              </>
+            ) : (
+              <Stack.Screen name="LogIn">
+                {props => <LogIn {...props} setIsLogin={setIsLogin} />}
+              </Stack.Screen>
+            )}
+          </Stack.Navigator>
+        </NavigationContainer>
+      </SafeAreaView>
+    </PaperProvider>
+  </SafeAreaProvider>
+  )
 }
 
 const styles = StyleSheet.create({
