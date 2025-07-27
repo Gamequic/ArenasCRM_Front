@@ -23,7 +23,7 @@ export default function FindPiece() {
   const navigation = useNavigation();
   const { colors } = useTheme();
 
-  const [activeFilters, setActiveFilters] = useState([]);
+  const [activeFilters, setActiveFilters] = useState<string[]>([]);
   const [publicId, setPublicId] = useState('');
   const [date, setDate] = useState<Date | null>(null);
   const [startDate, setStartDate] = useState<Date | null>(null);
@@ -38,11 +38,11 @@ export default function FindPiece() {
   const [isAseguranza, setIsAseguranza] = useState<"true" | "false" | null>(null);
   const [paidWithCard, setPaidWithCard] = useState<"true" | "false" | null>(null);
 
-  const [results, setResults] = useState([]);
+  const [results, setResults] = useState<any[]>([]);
 
-  const formatDate = (d) => d ? d.toISOString().split("T")[0] : null;
+  const formatDate = (d: Date | null) => d ? d.toISOString().split("T")[0] : null;
 
-  const toggleFilter = (filter) => {
+  const toggleFilter = (filter: string) => {
     setActiveFilters(prev =>
       prev.includes(filter)
         ? prev.filter(f => f !== filter)
@@ -50,7 +50,7 @@ export default function FindPiece() {
     );
   };
 
-  const cycleBoolean = (current) => {
+  const cycleBoolean = (current: "true" | "false" | null): "true" | "false" | null => {
     if (current === null) return "true";
     if (current === "true") return "false";
     return null;
@@ -58,7 +58,7 @@ export default function FindPiece() {
 
   const handleSearch = async () => {
     try {
-      const filters = {};
+      const filters: any = {};
 
       if (activeFilters.includes("Identificador") && publicId) {
         filters.publicId = publicId;
@@ -312,7 +312,7 @@ export default function FindPiece() {
             }
             renderItem={({ item }) => (
               <List.Accordion
-                title={ <Text>{item.PublicId + ' - ' + item.Medico}</Text> }
+                title={item.PublicId + ' - ' + item.Medico}
                 id={item.PublicId}
                 left={props => <List.Icon
                   {...props}
