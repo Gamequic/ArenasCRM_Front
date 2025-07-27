@@ -1,8 +1,8 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { View, Platform, Pressable, ScrollView } from "react-native";
 import { TextInput, Text, Button, useTheme, SegmentedButtons, HelperText, Modal, Portal, IconButton } from "react-native-paper";
 import DateTimePicker from "@react-native-community/datetimepicker";
-import { useRoute } from '@react-navigation/native';
+import { useNavigation, useRoute } from '@react-navigation/native';
 import Icon from "react-native-paper/src/components/Icon";
 import { useForm, Controller } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
@@ -17,6 +17,7 @@ const service = new PiecesService();
 
 export default function UpdatePiece() {
 	const { colors } = useTheme();
+	const navigation = useNavigation();
 	const route = useRoute();
   	const { itemID } = route.params;
 
@@ -36,7 +37,7 @@ export default function UpdatePiece() {
 	const [paid, setPaid] = useState(false);
 	const [factura, setFactura] = useState(false);
 	const [aseguranza, setAseguranza] = useState(false);
-	const [paidWithCard, setPaidWithCard] = useState(false); // ✅ nuevo estado
+	const [paidWithCard, setPaidWithCard] = useState(false);
 
 	// Step 3: Progress status (chips)
 	const [progressStatus, setProgressStatus] = useState('En proceso');
@@ -47,6 +48,7 @@ export default function UpdatePiece() {
 	// Step 4: Gather form data and log JSON
 	const onSubmit = async () => {
 		const data = {
+			id: itemID,
 			PublicId: parseInt(identifier),
 			date: formattedDate,
 			Hospital: hospital,
@@ -61,13 +63,11 @@ export default function UpdatePiece() {
 			Status: progressStatus,
 		};
 
-		console.log("Sending data:", data);
-
 		try {
-			await service.create(data);
+			await service.update(itemID, data);
 		} catch (error) {
 			if (error instanceof Error) {
-				console.error("Failed to create piece:", error.message);
+				console.error("Failed to update piece:", error.message);
 				if (error.message === "PublicId must be unique\n") {
 					setError("identifier", {
 						type: "manual",
@@ -80,24 +80,42 @@ export default function UpdatePiece() {
 			return
 		}
 
-		// Clean all data
-		setIdentifier('');
-		setDate(new Date());
-		setHospital('');
-		setMedico('');
-		setPaciente('');
-		setPieza('');
-		setPrecio('');
-		setPaid(false);
-		setFactura(false);
-		setAseguranza(false);
-		setPaidWithCard(false);
-		setProgressStatus('En proceso');
-		reset();
-
 		// Show feed back to user
 		setSuccessVisible(true);
 	};
+
+	// Get the data from the piece
+	useEffect(() => {
+		async function fetchData() {
+			const dataPiece = await service.findOne(itemID);
+
+			// Fill form
+			// We update both the local state (used for UI or derived logic) and the form state (managed by react-hook-form).
+			// `setIdentifier` and `setPrecio` update local states, while `setValue` updates the internal form value.
+			setIdentifier(dataPiece.PublicId);
+			setValue("identifier", String(dataPiece.PublicId));
+
+			setPrecio(dataPiece.Price);
+			setValue("precio", String(dataPiece.Price));
+			setHospital(dataPiece.Hospital);
+			setValue("Hospital", dataPiece.Hospital);
+			setMedico(dataPiece.Medico);
+			setValue("Medico", dataPiece.Medico);
+			setPaciente(dataPiece.Paciente);
+			setValue("Paciente", dataPiece.Paciente);
+			setPieza(dataPiece.Pieza);
+			setValue("Pieza", dataPiece.Pieza);
+
+			setDate(new Date(dataPiece.Date));
+			setPaid(dataPiece.IsPaid);
+			setFactura(dataPiece.IsFactura);
+			setAseguranza(dataPiece.IsAseguranza)
+			setPaidWithCard(dataPiece.PaidWithCard);
+			setProgressStatus(dataPiece.Status);
+		}
+
+		fetchData();
+  	}, []);
 
 	const schema = yup.object().shape({
 		identifier: yup
@@ -131,6 +149,7 @@ export default function UpdatePiece() {
 		handleSubmit,
 		reset,
 		setError,
+		setValue,
 		formState: { errors },
 	} = useForm({
 		resolver: yupResolver(schema),
@@ -472,7 +491,7 @@ export default function UpdatePiece() {
 					style={{ marginTop: 16, backgroundColor: colors.primary, zIndex: 1, top: 12 }}
 					onPress={handleSubmit(onSubmit)}
 				>
-					Añadir pieza
+					Actualizar pieza
 				</Button>
 			</View>
 
@@ -481,9 +500,9 @@ export default function UpdatePiece() {
 		<Portal>
 			<Modal
 			visible={successVisible}
-			onDismiss={() => setSuccessVisible(false)}
+			onDismiss={() => {setSuccessVisible(false);navigation.goBack();}}
 			contentContainerStyle={{
-				backgroundColor: colors.primary, // 🎨 color del modal
+				backgroundColor: colors.primary,
 				padding: 24,
 				marginHorizontal: 32,
 				borderRadius: 12,
@@ -493,18 +512,18 @@ export default function UpdatePiece() {
 			<IconButton
 				icon="check-circle"
 				size={48}
-				iconColor={colors.onPrimary} // ✅ color del icono sobre fondo primary
+				iconColor={colors.onPrimary}
 			/>
 			<Text
 				style={{
-				color: colors.onPrimary, // ✅ texto legible sobre fondo
+				color: colors.onPrimary,
 				fontSize: 18,
 				marginTop: 8,
 				textAlign: "center",
 				fontWeight: "bold",
 				}}
 			>
-				Piece added successfully!
+				¡Pieza actualizada exitosamente!
 			</Text>
 			</Modal>
 		</Portal>

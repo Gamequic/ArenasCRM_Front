@@ -58,8 +58,6 @@ export default function AddPiece() {
 			Status: progressStatus,
 		};
 
-		console.log("Sending data:", data);
-
 		try {
 			await service.create(data);
 		} catch (error) {
@@ -501,7 +499,7 @@ export default function AddPiece() {
 				fontWeight: "bold",
 				}}
 			>
-				Piece added successfully!
+				¡Pieza agregada exitosamente!
 			</Text>
 			</Modal>
 		</Portal>

@@ -13,6 +13,19 @@ class PiecesService {
     }
   }
 
+  async update(id, body) {
+    try {
+      console.log(`http://10.0.2.2:8080/api/pieces/${id}`)
+      const response = await axios.put(`http://10.0.2.2:8080/api/pieces/${id}`, body);
+      return response.data;
+    } catch (error) {
+      console.log(error)
+      const errMsg = error?.response?.data || error.message;
+      console.error("Error in update:", errMsg);
+      throw new Error(errMsg);
+    }
+  }
+
   // Buscar piezas por filtros
   async find(filters) {
     try {
@@ -22,6 +35,16 @@ class PiecesService {
         .join("&");
 
       const response = await axios.get(`http://10.0.2.2:8080/api/pieces/search?${query}`);
+      return response.data;
+    } catch (error) {
+      console.error("Error in find:", error.response ? error.response.data : error.message);
+      throw error;
+    }
+  }
+
+  async findOne(id) {
+    try {
+      const response = await axios.get(`http://10.0.2.2:8080/api/pieces/${id}`);
       return response.data;
     } catch (error) {
       console.error("Error in find:", error.response ? error.response.data : error.message);
