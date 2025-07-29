@@ -1,5 +1,5 @@
 // App.tsx
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   SafeAreaView,
   StatusBar,
@@ -25,6 +25,7 @@ import MainScreen from './screens/main';
 import LogIn from './screens/auth/logIn';
 import UpdatePiece from './screens/updatePiece';
 import { vibrantDarkOverrides, vibrantLightOverrides} from './utils/vibrantOverrides';
+import { setLogoutCallback } from './utils/axios';
 
 // Base color
 const { light, dark } = generateMaterialTheme('#1565C0');
@@ -49,29 +50,36 @@ export default function App() {
     },
   };
 
+  useEffect(() => {
+    setLogoutCallback(() => {
+      setIsLogin(false);
+    });
+  }, []);
+
+
   return (
-  <SafeAreaProvider>
-    <PaperProvider theme={paperTheme}>
-      <SafeAreaView style={{ flex: 1 }}>
-        <NavigationContainer>
-          <StatusBar barStyle={isDark ? 'light-content' : 'dark-content'} />
-          <Stack.Navigator screenOptions={{ headerShown: false }}>
-            {isLogin ? (
-              <>
-                <Stack.Screen name="MainTabs" component={MainScreen} />
-                <Stack.Screen name="UpdatePiece" component={UpdatePiece} />
-              </>
-            ) : (
-              <Stack.Screen name="LogIn">
-                {props => <LogIn {...props} setIsLogin={setIsLogin} />}
-              </Stack.Screen>
-            )}
-          </Stack.Navigator>
-        </NavigationContainer>
-      </SafeAreaView>
-    </PaperProvider>
-  </SafeAreaProvider>
-  )
+    <SafeAreaProvider>
+      <PaperProvider theme={paperTheme}>
+        <SafeAreaView style={{ flex: 1 }}>
+          <NavigationContainer>
+            <StatusBar barStyle={isDark ? 'light-content' : 'dark-content'} />
+            <Stack.Navigator screenOptions={{ headerShown: false }}>
+              {isLogin ? (
+                <>
+                  <Stack.Screen name="MainTabs" component={MainScreen} />
+                  <Stack.Screen name="UpdatePiece" component={UpdatePiece} />
+                </>
+              ) : (
+                <Stack.Screen name="LogIn">
+                  {props => <LogIn {...props} setIsLogin={setIsLogin} />}
+                </Stack.Screen>
+              )}
+            </Stack.Navigator>
+          </NavigationContainer>
+        </SafeAreaView>
+      </PaperProvider>
+    </SafeAreaProvider>
+  );
 }
 
 const styles = StyleSheet.create({

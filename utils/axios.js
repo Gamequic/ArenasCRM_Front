@@ -1,48 +1,41 @@
 import axios from 'axios';
-import {AsyncStorage} from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import Config from 'react-native-config';
 
-const axiosServices = axios.create({ baseURL: Config.API_URL || 'http://localhost:3010/' });
+let logoutCallback = null;
 
-// ==============================|| AXIOS - FOR MOCK SERVICES ||============================== //
+export const setLogoutCallback = (callback) => {
+  logoutCallback = callback;
+};
+
+const axiosServices = axios.create({
+  baseURL: Config.API_URL || 'http://localhost:3010/',
+});
 
 axiosServices.interceptors.request.use(
-    async (config) => {
-        const accessToken = AsyncStorage.getItem('serviceToken');
-        if (accessToken) {
-            config.headers['Authorization'] = `Bearer ${accessToken}`;
-        }
-        return config;
-    },
-    (error) => {
-        return Promise.reject(error);
+  async (config) => {
+    const token = await AsyncStorage.getItem('serviceToken');
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
     }
+    return config;
+  },
+  (error) => Promise.reject(error)
 );
 
 axiosServices.interceptors.response.use(
-    (response) => response,
-    (error) => {
-        if (error.response.status === 401 && !window.location.href.includes('/login')) {
-            window.location.pathname = '/login';
-        }
-        return Promise.reject((error.response && error.response.data) || 'Wrong Services');
+  (response) => response,
+  async (error) => {
+    if (error.response?.status === 401) {
+      if (logoutCallback) {
+        // Limpia token
+        await AsyncStorage.removeItem('serviceToken').catch(() => {});
+        // Ejecuta logout en la app
+        logoutCallback();
+      }
     }
+    return Promise.reject(error.response?.data || 'Wrong Services');
+  }
 );
 
-export default axiosServices;
-
-export const fetcher = async (args) => {
-    const [url, config] = Array.isArray(args) ? args : [args];
-
-    const res = await axiosServices.get(url, { ...config });
-
-    return res.data;
-};
-
-
-/*
-Developer note
-    This is intented to be used in the future to automatice the token use
-    And the logout by session expiration thing, not been used right now
-    Just a copy from another proyect that is working right with this code
-*/
+export { axiosServices as axios };

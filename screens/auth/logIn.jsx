@@ -6,6 +6,11 @@ import { useForm, Controller } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 
+// Project imports
+import AuthService from "../../services/auth.service";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+const service = new AuthService();
+
 export default function LogIn({ setIsLogin }) {
 	const { colors } = useTheme();
 
@@ -47,6 +52,24 @@ export default function LogIn({ setIsLogin }) {
 			elevation: 2,
 		}
 	}
+
+    const tryLogIn = async () => {
+        try {
+            const token = await service.LogIn({
+                Email: email,
+                Password: password
+            })
+
+            await onLoginSuccess(token);
+        } catch (error) {
+            console.log(error)
+        }
+    }
+
+    const onLoginSuccess = async (token) => {
+        await AsyncStorage.setItem('serviceToken', token);
+        setIsLogin(true);
+    };
 
 	return (
         <View
@@ -156,7 +179,7 @@ export default function LogIn({ setIsLogin }) {
                     <Button
                         mode="contained"
                         style={{ backgroundColor: colors.primary, zIndex: 1 }}
-                        onPress={handleSubmit(() => {setIsLogin(true)})}
+                        onPress={handleSubmit(() => {tryLogIn()})}
                     >
                         Log in
                     </Button>

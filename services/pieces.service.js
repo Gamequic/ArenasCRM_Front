@@ -1,4 +1,4 @@
-import axios from "axios";
+import { axios } from '../utils/axios';
 import Config from 'react-native-config';
 
 class PiecesService {
@@ -34,8 +34,6 @@ class PiecesService {
         .map(([key, value]) => `${encodeURIComponent(key)}=${encodeURIComponent(value)}`)
         .join("&");
       
-      console.log(Config)
-      console.log(`${Config.API_URL}/api/pieces/search?${query}`)
       const response = await axios.get(`${Config.API_URL}/api/pieces/search?${query}`);
       return response.data;
     } catch (error) {

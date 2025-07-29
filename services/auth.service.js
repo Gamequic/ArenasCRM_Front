@@ -1,12 +1,12 @@
-import axios from "axios";
+import axios from 'axios';
 import Config from 'react-native-config';
 
 class AuthService {
   async LogIn({ Email, Password }) {
     try {
-      const response = await axios.post(`${Config.API_URL}/auth/login`, {
-            Email, Password
-        });
+      const response = await axios.post(`${Config.API_URL}/api/auth/login`, {
+        Email, Password
+      });
       return response.data;
     } catch (error) {
       const errMsg = error?.response?.data || error.message;
