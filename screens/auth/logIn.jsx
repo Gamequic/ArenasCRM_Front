@@ -5,6 +5,7 @@ import Icon from "react-native-paper/src/components/Icon";
 import { useForm, Controller } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
+import Config from "react-native-config";
 
 // Project imports
 import AuthService from "../../services/auth.service";
@@ -13,10 +14,11 @@ const service = new AuthService();
 
 export default function LogIn({ setIsLogin }) {
 	const { colors } = useTheme();
+    const isDevelopment = Config.ENV === "development"
 
     // Form Data
-    const [ email, setEmail ] = useState('');
-    const [ password, setPassword ] = useState('');
+    const [ email, setEmail ] = useState(isDevelopment ? "demiancalleros0@gmail.com" : '');
+    const [ password, setPassword ] = useState(isDevelopment ? "12345678" : '');
     const [ rememberMe, setRememberMe ] = useState(true);
     const [ secureText, setSecureText ] = useState(true);
 
