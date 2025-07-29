@@ -20,6 +20,7 @@
     "react": "19.1.0",
     "react-hook-form": "^7.60.0",
     "react-native": "0.80.0",
+    "react-native-config": "^1.5.5",
     "react-native-material-kit": "^0.6.0-beta.1",
     "react-native-paper": "^5.14.5",
     "react-native-permissions": "^5.4.1",

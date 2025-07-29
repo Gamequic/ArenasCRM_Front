@@ -1,8 +1,8 @@
 import axios from 'axios';
 import {AsyncStorage} from 'react-native';
+import Config from 'react-native-config';
 
-// const axiosServices = axios.create({ baseURL: import.meta.env.VITE_APP_API_URL || 'http://localhost:3010/' }); // todo .env
-const axiosServices = axios.create({ baseURL: "http://10.0.2.2:8080" });
+const axiosServices = axios.create({ baseURL: Config.API_URL || 'http://localhost:3010/' });
 
 // ==============================|| AXIOS - FOR MOCK SERVICES ||============================== //
 
