@@ -11,15 +11,15 @@ const MainScreen = () => {
 
   const [index, setIndex] = React.useState(0);
   const [routes] = React.useState([
-    { key: 'addPiece', title: 'Agregar pieza', focusedIcon: 'heart', unfocusedIcon: 'heart-outline'},
-    { key: 'findPiece', title: 'Buscar piezas', focusedIcon: 'album' },
-    { key: 'colors', title: 'Colores', focusedIcon: 'album' }
+    { key: 'addPiece', title: 'Agregar pieza', focusedIcon: 'plus-box-multiple', unfocusedIcon: 'plus-box-multiple-outline'},
+    { key: 'findPiece', title: 'Buscar piezas', focusedIcon: 'view-list', unfocusedIcon: 'view-list-outline' },
+    // { key: 'colors', title: 'Colores', focusedIcon: 'album' }
   ]);
 
   const renderScene = BottomNavigation.SceneMap({
     addPiece: AddPiece,
     findPiece: FindPiece,
-    colors: ThemeColorsScreen,
+    // colors: ThemeColorsScreen,
   });
 
   return (
