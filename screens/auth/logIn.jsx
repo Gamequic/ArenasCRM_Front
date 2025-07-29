@@ -18,7 +18,7 @@ export default function LogIn({ setIsLogin }) {
     const [ email, setEmail ] = useState('');
     const [ password, setPassword ] = useState('');
     const [ rememberMe, setRememberMe ] = useState(true);
-    const [secureText, setSecureText] = useState(true);
+    const [ secureText, setSecureText ] = useState(true);
 
 	const schema = yup.object().shape({
 		Email: yup
@@ -62,6 +62,9 @@ export default function LogIn({ setIsLogin }) {
             })
 
             await onLoginSuccess(token);
+            await AsyncStorage.setItem('rememberMe', String(rememberMe));
+            // rememberMe is saved because
+            // when the appState change to inactive or background logoff the user
         } catch (error) {
             if (error.message === "User not found\n") {
                 setError("Email", { message: "Usuario no encontrado", type: "manual" });

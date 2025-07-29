@@ -1,11 +1,11 @@
 // App.tsx
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   SafeAreaView,
   StatusBar,
   StyleSheet,
   useColorScheme,
-  View,
+  AppState,
 } from 'react-native';
 
 import { SafeAreaProvider } from 'react-native-safe-area-context';
@@ -18,6 +18,7 @@ import {
 
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // Project imports
 import { generateMaterialTheme } from './utils/theme';
@@ -26,12 +27,15 @@ import LogIn from './screens/auth/logIn';
 import UpdatePiece from './screens/updatePiece';
 import { vibrantDarkOverrides, vibrantLightOverrides} from './utils/vibrantOverrides';
 import { setLogoutCallback } from './utils/axios';
+import AuthService from './services/auth.service';
 
 // Base color
 const { light, dark } = generateMaterialTheme('#1565C0');
 
 // Stack navigation
 const Stack = createNativeStackNavigator();
+
+const service = new AuthService();
 
 export default function App() {
   const [ isLogin, setIsLogin ] = useState(false);
@@ -56,6 +60,45 @@ export default function App() {
     });
   }, []);
 
+  // Check if user is login
+  const validate = async () => {
+    const data = await service.Validate();
+    // If validate give a good answer, then valid users
+    setIsLogin(typeof data?.user_id === "number")
+  }
+  useEffect(() => {
+    validate();
+  }, [])
+
+  // Log out the user if rememberMe is false
+  const appState = useRef(AppState.currentState);
+
+  const logoutIfNotRemembering = async () => {
+    const rememberMe = await AsyncStorage.getItem('rememberMe');
+    // null - "true" - "false"
+    if (rememberMe === "false") {
+      setIsLogin(false);
+      service.LogOut();
+    }
+  }
+
+  // useEffect to know when the app is close
+  useEffect(() => {
+    const subscription = AppState.addEventListener('change', nextAppState => {
+      if (
+        appState.current.match(/active/) &&
+        nextAppState.match(/inactive|background/)
+      ) {
+        logoutIfNotRemembering()
+      }
+
+      appState.current = nextAppState;
+    });
+
+    return () => {
+      subscription.remove();
+    };
+}, []);
 
   return (
     <SafeAreaProvider>
