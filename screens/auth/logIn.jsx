@@ -18,6 +18,7 @@ export default function LogIn({ setIsLogin }) {
     const [ email, setEmail ] = useState('');
     const [ password, setPassword ] = useState('');
     const [ rememberMe, setRememberMe ] = useState(true);
+    const [secureText, setSecureText] = useState(true);
 
 	const schema = yup.object().shape({
 		Email: yup
@@ -62,7 +63,13 @@ export default function LogIn({ setIsLogin }) {
 
             await onLoginSuccess(token);
         } catch (error) {
-            console.log(error)
+            if (error.message === "User not found\n") {
+                setError("Email", { message: "Usuario no encontrado", type: "manual" });
+            }
+            if (error.message === "Password is wrong\n") {
+                setError("Password", { message: "Contraseña incorrecta", type: "manual" });
+            }
+            console.error(error.message)
         }
     }
 
@@ -122,6 +129,11 @@ export default function LogIn({ setIsLogin }) {
                                 style={{backgroundColor: colors.surface}}
                                 textColor={colors.onSurface}
                                 activeOutlineColor={colors.primary}
+                                keyboardType="email-address"
+                                autoCapitalize="none"
+                                autoComplete="email"
+                                textContentType="emailAddress"
+                                importantForAutofill="yes"
                                 left={<TextInput.Icon icon="email" />}
                             />
                         )}
@@ -141,11 +153,22 @@ export default function LogIn({ setIsLogin }) {
                                 onBlur={onBlur}
                                 error={!!errors.Password}
                                 mode="outlined"
-                                style={{backgroundColor: colors.surface}}
+                                secureTextEntry={secureText}
+                                autoCapitalize="none"
+                                autoComplete="password"
+                                textContentType="password"
+                                importantForAutofill="yes"
+                                style={{ backgroundColor: colors.surface }}
                                 textColor={colors.onSurface}
                                 activeOutlineColor={colors.primary}
                                 left={<TextInput.Icon icon="key" />}
-                                right={<TextInput.Icon icon="eye" />}
+                                right={
+                                    <TextInput.Icon
+                                    icon={secureText ? "eye" : "eye-off"}
+                                    onPress={() => setSecureText(!secureText)}
+                                    forceTextInputFocus={false}
+                                    />
+                                }
                             />
                         )}
                     />
