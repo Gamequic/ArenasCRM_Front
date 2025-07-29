@@ -13,7 +13,7 @@ import {
   Provider as PaperProvider,
   MD3LightTheme,
   MD3DarkTheme,
-  Text,
+  useTheme,
 } from 'react-native-paper';
 
 import { NavigationContainer } from '@react-navigation/native';
@@ -38,6 +38,7 @@ const Stack = createNativeStackNavigator();
 const service = new AuthService();
 
 export default function App() {
+  const { colors } = useTheme();
   const [ isLogin, setIsLogin ] = useState(false);
 
   const colorScheme = useColorScheme();
@@ -124,16 +125,3 @@ export default function App() {
     </SafeAreaProvider>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#E3F2FD"
-  },
-});
-
-/* 
-Developer note
-  Why is this color picket manually?
-  For simplicity, it is probably better ways to do it but it just the fastest one at the time
-*/

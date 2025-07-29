@@ -376,7 +376,7 @@ export default function FindPiece() {
         <View
           style={{
             padding: 16,
-            backgroundColor: "#e0e0e0",
+            backgroundColor: colors.tertiaryContainer,
             borderTopWidth: 1,
             borderColor: "#ccc",
           }}

@@ -84,131 +84,138 @@ export default function LogIn({ setIsLogin }) {
 	return (
         <View
             style={{
-                paddingHorizontal: 16,
-                gap: 12,
-                margin: "auto"
+                flex: 1,
+                backgroundColor: colors.background
             }}
         >
-            <View style={{overflow: 'visible', width: 300, ...styles.card}}>
-                <View
-                    style={{
-                        backgroundColor: colors.inversePrimary,
-                        paddingVertical: 12,
-                        paddingHorizontal: 16,
-                        flexDirection: 'row',
-                        alignItems: 'center',
-                        justifyContent: 'flex-start',
-                        gap: 8,
-                        borderTopEndRadius: 12,
-                        borderTopStartRadius: 12,
-                    }}
-                    >
-                    <Icon source={require('./../../public/icon.png')} size={64} color={colors.onSurface} />
-                    <Text
+            <View
+                style={{
+                    paddingHorizontal: 16,
+                    gap: 12,
+                    margin: "auto",
+                }}
+            >
+                <View style={{overflow: 'visible', width: 300, ...styles.card}}>
+                    <View
                         style={{
-                        color: colors.onSurface,
-                        fontSize: 24,
-                        fontWeight: '600',
-                        lineHeight: 34,
+                            backgroundColor: colors.inversePrimary,
+                            paddingVertical: 12,
+                            paddingHorizontal: 16,
+                            flexDirection: 'row',
+                            alignItems: 'center',
+                            justifyContent: 'flex-start',
+                            gap: 8,
+                            borderTopEndRadius: 12,
+                            borderTopStartRadius: 12,
                         }}
-                    >
-                        Log In
-                    </Text>
-                </View>
+                        >
+                        <Icon source={require('./../../public/icon.png')} size={64} color={colors.onSurface} />
+                        <Text
+                            style={{
+                            color: colors.onSurface,
+                            fontSize: 24,
+                            fontWeight: '600',
+                            lineHeight: 34,
+                            }}
+                        >
+                            Log In
+                        </Text>
+                    </View>
 
-                <View style={{paddingTop: 12, paddingHorizontal: 12, gap: 8}}>
-                    <Controller
-                        control={control}
-                        name="Email"
-                        defaultValue=""
-                        render={({ field: { onChange, onBlur, value } }) => (
-                            <TextInput
-                                label="Email"
-                                value={email}
-                                onChangeText={(e) => {onChange(e); setEmail(e)}}
-                                onBlur={onBlur}
-                                error={!!errors.Email}
-                                mode="outlined"
-                                style={{backgroundColor: colors.surface}}
-                                textColor={colors.onSurface}
-                                activeOutlineColor={colors.primary}
-                                keyboardType="email-address"
-                                autoCapitalize="none"
-                                autoComplete="email"
-                                textContentType="emailAddress"
-                                importantForAutofill="yes"
-                                left={<TextInput.Icon icon="email" />}
-                            />
+                    <View style={{paddingTop: 12, paddingHorizontal: 12, gap: 8}}>
+                        <Controller
+                            control={control}
+                            name="Email"
+                            defaultValue=""
+                            render={({ field: { onChange, onBlur, value } }) => (
+                                <TextInput
+                                    label="Email"
+                                    value={email}
+                                    onChangeText={(e) => {onChange(e); setEmail(e)}}
+                                    onBlur={onBlur}
+                                    error={!!errors.Email}
+                                    mode="outlined"
+                                    style={{backgroundColor: colors.surface}}
+                                    textColor={colors.onSurface}
+                                    activeOutlineColor={colors.primary}
+                                    keyboardType="email-address"
+                                    autoCapitalize="none"
+                                    autoComplete="email"
+                                    textContentType="emailAddress"
+                                    importantForAutofill="yes"
+                                    left={<TextInput.Icon icon="email" />}
+                                />
+                            )}
+                        />
+                        {errors.Email && (
+                            <HelperText type="error">{errors.Email.message}</HelperText>
                         )}
-                    />
-                    {errors.Email && (
-                        <HelperText type="error">{errors.Email.message}</HelperText>
-                    )}
-                    <Controller
-                        control={control}
-                        name="Password"
-                        defaultValue=""
-                        render={({ field: { onChange, onBlur, value } }) => (
-                            <TextInput
-                                label="Password"
-                                value={password}
-                                onChangeText={(e) => {onChange(e); setPassword(e)}}
-                                onBlur={onBlur}
-                                error={!!errors.Password}
-                                mode="outlined"
-                                secureTextEntry={secureText}
-                                autoCapitalize="none"
-                                autoComplete="password"
-                                textContentType="password"
-                                importantForAutofill="yes"
-                                style={{ backgroundColor: colors.surface }}
-                                textColor={colors.onSurface}
-                                activeOutlineColor={colors.primary}
-                                left={<TextInput.Icon icon="key" />}
-                                right={
-                                    <TextInput.Icon
-                                    icon={secureText ? "eye" : "eye-off"}
-                                    onPress={() => setSecureText(!secureText)}
-                                    forceTextInputFocus={false}
-                                    />
-                                }
-                            />
+                        <Controller
+                            control={control}
+                            name="Password"
+                            defaultValue=""
+                            render={({ field: { onChange, onBlur, value } }) => (
+                                <TextInput
+                                    label="Password"
+                                    value={password}
+                                    onChangeText={(e) => {onChange(e); setPassword(e)}}
+                                    onBlur={onBlur}
+                                    error={!!errors.Password}
+                                    mode="outlined"
+                                    secureTextEntry={secureText}
+                                    autoCapitalize="none"
+                                    autoComplete="password"
+                                    textContentType="password"
+                                    importantForAutofill="yes"
+                                    style={{ backgroundColor: colors.surface }}
+                                    textColor={colors.onSurface}
+                                    activeOutlineColor={colors.primary}
+                                    left={<TextInput.Icon icon="key" />}
+                                    right={
+                                        <TextInput.Icon
+                                        icon={secureText ? "eye" : "eye-off"}
+                                        onPress={() => setSecureText(!secureText)}
+                                        forceTextInputFocus={false}
+                                        />
+                                    }
+                                />
+                            )}
+                        />
+                        {errors.Password && (
+                            <HelperText type="error">{errors.Password.message}</HelperText>
                         )}
-                    />
-                    {errors.Password && (
-                        <HelperText type="error">{errors.Password.message}</HelperText>
-                    )}
-                </View>
-                <View
-                    style={{
-                        marginHorizontal: 12,
-                        display: 'flex',
-                        flexDirection: 'row'
-                    }}
-                >
-                    <Checkbox
-                        status={rememberMe ? 'checked' : 'unchecked'}
-                        onPress={() => {
-                            setRememberMe(!rememberMe);
+                    </View>
+                    <View
+                        style={{
+                            marginHorizontal: 12,
+                            display: 'flex',
+                            flexDirection: 'row'
                         }}
-                    />
-                    <Text
-                        style={{marginVertical: "auto", fontSize: 16}}
-                    >Remember me</Text>
-                </View>
-                <View
-                    style={{
-                        marginHorizontal: 12,
-                        paddingBottom: 12
-                    }}
-                >
-                    <Button
-                        mode="contained"
-                        style={{ backgroundColor: colors.primary, zIndex: 1 }}
-                        onPress={handleSubmit(() => {tryLogIn()})}
                     >
-                        Log in
-                    </Button>
+                        <Checkbox
+                            status={rememberMe ? 'checked' : 'unchecked'}
+                            onPress={() => {
+                                setRememberMe(!rememberMe);
+                            }}
+                        />
+                        <Text
+                            style={{marginVertical: "auto", fontSize: 16}}
+                        >Remember me</Text>
+                    </View>
+                    <View
+                        style={{
+                            marginHorizontal: 12,
+                            paddingBottom: 12
+                        }}
+                    >
+                        <Button
+                            mode="contained"
+                            style={{ backgroundColor: colors.primary, zIndex: 1 }}
+                            onPress={handleSubmit(() => {tryLogIn()})}
+                        >
+                            Log in
+                        </Button>
+                    </View>
                 </View>
             </View>
         </View>
