@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { View, Platform, Pressable, ScrollView } from "react-native";
+import { useWindowDimensions, View, Platform, Pressable, ScrollView } from "react-native";
 import { TextInput, Text, Button, useTheme, SegmentedButtons, HelperText, Modal, Portal, IconButton } from "react-native-paper";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import Icon from "react-native-paper/src/components/Icon";
@@ -15,7 +15,9 @@ import Autocomplete from "../../components/Autocomplete";
 const service = new PiecesService();
 
 export default function AddPiece() {
+	const { width, height } = useWindowDimensions();
 	const { colors } = useTheme();
+	const isLandscape = width > height;
 
 	const [successVisible, setSuccessVisible] = useState(false);
 
@@ -160,150 +162,159 @@ export default function AddPiece() {
 					gap: 12
 				}}
 			>
-				<View style={{overflow: 'hidden', ...styles.card}}>
-					<View
-						style={{
-							backgroundColor: colors.inversePrimary,
-							paddingVertical: 12,
-							paddingHorizontal: 16,
-							flexDirection: 'row',
-							alignItems: 'center',
-							justifyContent: 'flex-start',
-							gap: 8,
-						}}
-						>
-						<Icon source="archive" size={28} color={colors.onSurface} />
-						<Text
+				<View
+					style={{
+						display: 'flex',
+						flexDirection: isLandscape ? 'row' : 'column',
+						gap: 12,
+						width: '100%'
+					}}
+				>
+					<View style={{flex: 1, overflow: 'hidden', ...styles.card}}>
+						<View
 							style={{
-							color: colors.onSurface,
-							fontSize: 24,
-							fontWeight: '600',
-							lineHeight: 34,
+								backgroundColor: colors.inversePrimary,
+								paddingVertical: 12,
+								paddingHorizontal: 16,
+								flexDirection: 'row',
+								alignItems: 'center',
+								justifyContent: 'flex-start',
+								gap: 8,
 							}}
-						>
-							Registro de pieza
-						</Text>
-					</View>
+							>
+							<Icon source="archive" size={28} color={colors.onSurface} />
+							<Text
+								style={{
+								color: colors.onSurface,
+								fontSize: 24,
+								fontWeight: '600',
+								lineHeight: 34,
+								}}
+							>
+								Registro de pieza
+							</Text>
+						</View>
 
-					<View style={{padding: 12, gap: 8}}>
-						<Controller
-							control={control}
-							name="identifier"
-							defaultValue=""
-							render={({ field: { onChange, onBlur, value } }) => (
+						<View style={{padding: 12, gap: 8}}>
+							<Controller
+								control={control}
+								name="identifier"
+								defaultValue=""
+								render={({ field: { onChange, onBlur, value } }) => (
+									<TextInput
+										label="Identificador"
+										value={value}
+										onChangeText={(e) => {onChange(e); setIdentifier(e)}}
+										onBlur={onBlur}
+										error={!!errors.identifier}
+										mode="outlined"
+										style={{backgroundColor: colors.surface}}
+										textColor={colors.onSurface}
+										activeOutlineColor={colors.primary}
+									/>
+								)}
+							/>
+							{errors.identifier && (
+								<HelperText type="error">{errors.identifier.message}</HelperText>
+							)}
+
+
+							<Pressable
+								style={{ width: "100%" }}
+								onPress={() => setShow(true)}
+							>
 								<TextInput
-									label="Identificador"
-									value={value}
-									onChangeText={(e) => {onChange(e); setIdentifier(e)}}
-									onBlur={onBlur}
-									error={!!errors.identifier}
+									label="Fecha"
+									value={date.toLocaleDateString()}
+									editable={false}
+									pointerEvents="none"
 									mode="outlined"
 									style={{backgroundColor: colors.surface}}
 									textColor={colors.onSurface}
 									activeOutlineColor={colors.primary}
+									left={<TextInput.Icon icon={"calendar"} />}
+								/>
+							</Pressable>
+
+							{show && (
+								<DateTimePicker
+									value={date}
+									mode="date"
+									display={Platform.OS === "ios" ? "spinner" : "default"}
+									onChange={(event, selectedDate) => {
+										setShow(false);
+										if (selectedDate) setDate(selectedDate);
+									}}
 								/>
 							)}
-						/>
-						{errors.identifier && (
-							<HelperText type="error">{errors.identifier.message}</HelperText>
-						)}
-
-
-						<Pressable
-							style={{ width: "100%" }}
-							onPress={() => setShow(true)}
-						>
-							<TextInput
-								label="Fecha"
-								value={date.toLocaleDateString()}
-								editable={false}
-								pointerEvents="none"
-								mode="outlined"
-								style={{backgroundColor: colors.surface}}
-								textColor={colors.onSurface}
-								activeOutlineColor={colors.primary}
-								left={<TextInput.Icon icon={"calendar"} />}
-							/>
-						</Pressable>
-
-						{show && (
-							<DateTimePicker
-								value={date}
-								mode="date"
-								display={Platform.OS === "ios" ? "spinner" : "default"}
-								onChange={(event, selectedDate) => {
-									setShow(false);
-									if (selectedDate) setDate(selectedDate);
-								}}
-							/>
-						)}
+						</View>
 					</View>
-				</View>
 
-				<View style={{overflow: 'visible', ...styles.card}}>
-					<View
-						style={{
-							backgroundColor: colors.inversePrimary,
-							paddingVertical: 12,
-							paddingHorizontal: 16,
-							flexDirection: 'row',
-							alignItems: 'center',
-							justifyContent: 'flex-start',
-							gap: 8,
-							borderTopEndRadius: 12,
-							borderTopStartRadius: 12,
-						}}
-						>
-						<Icon source="hospital-building" size={28} color={colors.onSurface} />
-						<Text
+					<View style={{flex: 1, overflow: 'visible', ...styles.card}}>
+						<View
 							style={{
-							color: colors.onSurface,
-							fontSize: 24,
-							fontWeight: '600',
-							lineHeight: 34,
+								backgroundColor: colors.inversePrimary,
+								paddingVertical: 12,
+								paddingHorizontal: 16,
+								flexDirection: 'row',
+								alignItems: 'center',
+								justifyContent: 'flex-start',
+								gap: 8,
+								borderTopEndRadius: 12,
+								borderTopStartRadius: 12,
 							}}
-						>
-							Solicitud
-						</Text>
-					</View>
+							>
+							<Icon source="hospital-building" size={28} color={colors.onSurface} />
+							<Text
+								style={{
+								color: colors.onSurface,
+								fontSize: 24,
+								fontWeight: '600',
+								lineHeight: 34,
+								}}
+							>
+								Solicitud
+							</Text>
+						</View>
 
-					<View style={{padding: 12, gap: 8}}>
-						<Autocomplete
-							control={control}
-							error={errors.Hospital}
-							label="Hospital"
-							options={["Hospital Angeles", "DEL SOL"]}
-							onSelect={setHospital}
-							value={hospital}
-							icon="hospital-building"
-						/>
-						<Autocomplete
-							control={control}
-							error={errors.Medico}
-							label="Medico"
-							options={["DRA GALVAN", "DR NAJERA", "DR DIAZ"]}
-							onSelect={setMedico}
-							value={medico}
-							icon="doctor"
-						/>
-						<Autocomplete
-							control={control}
-							error={errors.Paciente}
-							label="Paciente"
-							options={["Lopez Perez Antonio", "Rivera Lopez Andrea"]}
-							onSelect={setPaciente}
-							value={paciente}
-							icon="account"
-						/>
-						<Autocomplete
-							control={control}
-							error={errors.Pieza}
-							label="Pieza"
-							options={["Biopsia de Higado", "Biopsia endoscopia"]}
-							onSelect={setPieza}
-							value={pieza}
-							icon="heart-pulse"
-						/>
+						<View style={{padding: 12, gap: 8}}>
+							<Autocomplete
+								control={control}
+								error={errors.Hospital}
+								label="Hospital"
+								options={["Hospital Angeles", "DEL SOL"]}
+								onSelect={setHospital}
+								value={hospital}
+								icon="hospital-building"
+							/>
+							<Autocomplete
+								control={control}
+								error={errors.Medico}
+								label="Medico"
+								options={["DRA GALVAN", "DR NAJERA", "DR DIAZ"]}
+								onSelect={setMedico}
+								value={medico}
+								icon="doctor"
+							/>
+							<Autocomplete
+								control={control}
+								error={errors.Paciente}
+								label="Paciente"
+								options={["Lopez Perez Antonio", "Rivera Lopez Andrea"]}
+								onSelect={setPaciente}
+								value={paciente}
+								icon="account"
+							/>
+							<Autocomplete
+								control={control}
+								error={errors.Pieza}
+								label="Pieza"
+								options={["Biopsia de Higado", "Biopsia endoscopia"]}
+								onSelect={setPieza}
+								value={pieza}
+								icon="heart-pulse"
+							/>
+						</View>
 					</View>
 				</View>
 
