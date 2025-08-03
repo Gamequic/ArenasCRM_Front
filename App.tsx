@@ -1,11 +1,12 @@
 // App.tsx
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   SafeAreaView,
   StatusBar,
   StyleSheet,
   useColorScheme,
   AppState,
+  Text
 } from 'react-native';
 
 import { SafeAreaProvider } from 'react-native-safe-area-context';
@@ -38,7 +39,6 @@ const Stack = createNativeStackNavigator();
 const service = new AuthService();
 
 export default function App() {
-  const { colors } = useTheme();
   const [ isLogin, setIsLogin ] = useState(false);
 
   const colorScheme = useColorScheme();

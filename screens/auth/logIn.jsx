@@ -5,7 +5,9 @@ import Icon from "react-native-paper/src/components/Icon";
 import { useForm, Controller } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
-import Config from "react-native-config";
+import Constants from 'expo-constants';
+
+const ISENV = Constants.expoConfig?.extra?.env;
 
 // Project imports
 import AuthService from "../../services/auth.service";
@@ -14,7 +16,7 @@ const service = new AuthService();
 
 export default function LogIn({ setIsLogin }) {
 	const { colors } = useTheme();
-    const isDevelopment = Config.ENV === "development"
+    const isDevelopment = ISENV === "development"
 
     // Form Data
     const [ email, setEmail ] = useState(isDevelopment ? "demiancalleros0@gmail.com" : '');

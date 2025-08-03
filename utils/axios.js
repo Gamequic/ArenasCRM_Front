@@ -1,7 +1,8 @@
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import Config from 'react-native-config';
+import Constants from 'expo-constants';
 
+const API_URL = Constants.expoConfig?.extra?.apiUrl;
 let logoutCallback = null;
 
 export const setLogoutCallback = (callback) => {
@@ -9,7 +10,7 @@ export const setLogoutCallback = (callback) => {
 };
 
 const axiosServices = axios.create({
-  baseURL: Config.API_URL || 'http://localhost:3010/',
+  baseURL: API_URL || 'http://localhost:3010/',
 });
 
 axiosServices.interceptors.request.use(
