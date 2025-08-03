@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { View, ScrollView } from "react-native";
 import {
   TextInput,
@@ -23,11 +23,15 @@ export default function Autocomplete({
   const [visible, setVisible] = useState(false);
   const [filteredOptions, setFilteredOptions] = useState([]);
 
-  // Abrir y cerrar el menú
-  const openMenu = () => setVisible(true);
-  const closeMenu = () => setVisible(false);
+  // Prevent reopening if already visible
+  const openMenu = () => {
+    if (!visible) setVisible(true);
+  };
+  const closeMenu = () => {
+    if (visible) setVisible(false);
+  };
 
-  // Filtrar opciones en tiempo real
+  // Filter options on text change
   const filterOptions = (text) => {
     setQuery(text);
     if (text.length === 0) {
@@ -53,54 +57,52 @@ export default function Autocomplete({
         control={control}
         name={label}
         defaultValue=""
-        render={({ field: { onChange, onBlur, value } }) => (
-          <Menu
-            visible={visible}
-            onDismiss={closeMenu}
-            anchor={
-              // Este View fuerza que el menú se coloque debajo del input
-              <View style={{ marginBottom: 8 }}>
-                <TextInput
-                  label={label}
-                  value={query}
-                  onChangeText={(text) => {
-                    filterOptions(text);
-                    onChange(text);
-                    onSelect?.(text);
-                  }}
-                  onFocus={() => {
-                    if (filteredOptions.length > 0) openMenu();
-                  }}
-                  onBlur={() => {
-                    onBlur();
-                  }}
-                  error={!!error}
-                  mode="outlined"
-                  style={{ backgroundColor: colors.surface }}
-                  textColor={colors.onSurface}
-                  activeOutlineColor={colors.primary}
-                  left={icon ? <TextInput.Icon icon={icon} /> : undefined}
-                />
-              </View>
-            }
-			contentStyle={{ marginTop: 64 }}
-          >
-            <ScrollView style={{ maxHeight: 200 }}>
-              {filteredOptions.map((item) => (
-                <Menu.Item
-                  key={item}
-                  onPress={() => {
-                    setQuery(item);
-                    onChange(item);
-                    onSelect?.(item);
-                    closeMenu();
-                  }}
-                  title={item}
-                />
-              ))}
-            </ScrollView>
-          </Menu>
-        )}
+        render={({ field: { onChange, onBlur, value } }) => {
+          const anchor = useMemo(() => (
+            <View style={{ marginBottom: 8 }}>
+              <TextInput
+                label={label}
+                value={query}
+                onChangeText={(text) => {
+                  filterOptions(text);
+                  onChange(text);
+                  onSelect?.(text);
+                }}
+                onBlur={onBlur}
+                error={!!error}
+                mode="outlined"
+                style={{ backgroundColor: colors.surface }}
+                textColor={colors.onSurface}
+                activeOutlineColor={colors.primary}
+                left={icon ? <TextInput.Icon icon={icon} /> : undefined}
+              />
+            </View>
+          ), [query, error, colors, icon]);
+
+          return (
+            <Menu
+              visible={visible}
+              onDismiss={closeMenu}
+              anchor={anchor}
+              contentStyle={{ marginTop: 64 }}
+            >
+              <ScrollView style={{ maxHeight: 200 }}>
+                {filteredOptions.map((item) => (
+                  <Menu.Item
+                    key={item}
+                    onPress={() => {
+                      setQuery(item);
+                      onChange(item);
+                      onSelect?.(item);
+                      closeMenu();
+                    }}
+                    title={item}
+                  />
+                ))}
+              </ScrollView>
+            </Menu>
+          );
+        }}
       />
       {error && <HelperText type="error">{error.message}</HelperText>}
     </View>
