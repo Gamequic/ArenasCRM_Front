@@ -20,25 +20,24 @@ export default function AddPiece() {
 	const isLandscape = width > height;
 
 	const [successVisible, setSuccessVisible] = useState(false);
+	const [show, setShow] = useState(false);
 
-	// Step 1: Form field states
+	// Form field states
 	const [identifier, setIdentifier] = useState('');
 	const [date, setDate] = useState(new Date());
-	const [show, setShow] = useState(false);
 	const [hospital, setHospital] = useState('');
-	const [medico, setMedico] = useState('');
-	const [paciente, setPaciente] = useState('');
+	const [doctorName, setdoctorName] = useState('');
+	const [patientName, setPatientName] = useState('');
+	const [patientAge, setPatientAge] = useState('');
 	const [pieza, setPieza] = useState('');
 	const [precio, setPrecio] = useState('');
+	const [description, setDescription] = useState('');
 
-	// Step 2: Checkbox states
+	// Checkbox states
 	const [paid, setPaid] = useState(false);
 	const [factura, setFactura] = useState(false);
 	const [aseguranza, setAseguranza] = useState(false);
 	const [paidWithCard, setPaidWithCard] = useState(false); // ✅ nuevo estado
-
-	// Step 3: Progress status (chips)
-	const [progressStatus, setProgressStatus] = useState('En proceso');
 
 	// Format date for backend: YYYY-MM-DD
 	const formattedDate = new Date(date).toISOString(); 
@@ -48,17 +47,20 @@ export default function AddPiece() {
 		const data = {
 			PublicId: parseInt(identifier),
 			date: formattedDate,
-			Hospital: hospital,
-			Medico: medico,
-			Paciente: paciente,
+			Hospital: { Name : hospital },
+			Doctor: { Name : doctorName },
+			PatientName: patientName,
+			PatientAge: parseInt(patientAge),
 			Pieza: pieza,
 			Price: parseFloat(precio),
 			IsPaid: paid,
 			IsFactura: factura,
 			IsAseguranza: aseguranza,
 			PaidWithCard: paidWithCard,
-			Status: progressStatus,
+			Description: description,
 		};
+
+		console.log(data)
 
 		try {
 			await service.create(data);
@@ -81,15 +83,16 @@ export default function AddPiece() {
 		setIdentifier('');
 		setDate(new Date());
 		setHospital('');
-		setMedico('');
-		setPaciente('');
+		setdoctorName('');
+		setPatientName('');
+		setPatientAge('');
 		setPieza('');
 		setPrecio('');
 		setPaid(false);
 		setFactura(false);
 		setAseguranza(false);
 		setPaidWithCard(false);
-		setProgressStatus('En proceso');
+		setDescription('En proceso');
 		reset();
 
 		// Show feed back to user
@@ -112,15 +115,24 @@ export default function AddPiece() {
 		Hospital: yup
 			.string()
 			.required("El hospital es obligatorio"),
-		Medico: yup
+		Doctor: yup
 			.string()
-			.required("El medico es obligatorio"),
-		Paciente: yup
+			.required("El nombre del doctor es obligatorio"),
+		patientName: yup
 			.string()
-			.required("El paciente es obligatorio"),
+			.required("El nombre del paciente es obligatorio"),
+		patientAge: yup
+			.string()
+			.test('is-positive-number', 'Debe ser un número positivo', value => {
+				if (!value) return false;
+				const num = Number(value);
+				return !isNaN(num) && num > 0;
+			}),
 		Pieza: yup
 			.string()
-			.required("El pieza es obligatorio")
+			.required("El pieza es obligatorio"),
+		Description: yup
+			.string()
 	});
 
 	const {
@@ -130,13 +142,7 @@ export default function AddPiece() {
 		setError,
 		formState: { errors },
 	} = useForm({
-		resolver: yupResolver(schema),
-		defaultValues: {
-			Hospital: "",
-			Medico: "",
-			Paciente: "",
-			Pieza: "",
-		},
+		resolver: yupResolver(schema)
 	});
 
 	const styles = {
@@ -191,7 +197,7 @@ export default function AddPiece() {
 								lineHeight: 34,
 								}}
 							>
-								Registro de pieza
+								Origen de pieza
 							</Text>
 						</View>
 
@@ -208,6 +214,7 @@ export default function AddPiece() {
 										onBlur={onBlur}
 										error={!!errors.identifier}
 										mode="outlined"
+										left={<TextInput.Icon icon="identifier" />}
 										style={{backgroundColor: colors.surface}}
 										textColor={colors.onSurface}
 										activeOutlineColor={colors.primary}
@@ -247,6 +254,25 @@ export default function AddPiece() {
 									}}
 								/>
 							)}
+
+							<Autocomplete
+								control={control}
+								error={errors.Hospital}
+								label="Hospital"
+								options={["Hospital Angeles", "DEL SOL"]}
+								onSelect={setHospital}
+								value={hospital}
+								icon="hospital-building"
+							/>
+							<Autocomplete
+								control={control}
+								error={errors.Doctor}
+								label="Doctor"
+								options={["DRA GALVAN", "DR NAJERA", "DR DIAZ"]}
+								onSelect={setdoctorName}
+								value={doctorName}
+								icon="doctor"
+							/>
 						</View>
 					</View>
 
@@ -273,38 +299,55 @@ export default function AddPiece() {
 								lineHeight: 34,
 								}}
 							>
-								Solicitud
+								Paciente
 							</Text>
 						</View>
 
 						<View style={{padding: 12, gap: 8}}>
-							<Autocomplete
+							<Controller
 								control={control}
-								error={errors.Hospital}
-								label="Hospital"
-								options={["Hospital Angeles", "DEL SOL"]}
-								onSelect={setHospital}
-								value={hospital}
-								icon="hospital-building"
+								name="patientName"
+								defaultValue=""
+								render={({ field: { onChange, onBlur, value } }) => (
+									<TextInput
+										label="Nombre del paciente"
+										value={value}
+										onChangeText={(e) => {onChange(e); setPatientName(e)}}
+										onBlur={onBlur}
+										error={!!errors.patientName}
+										mode="outlined"
+										left={<TextInput.Icon icon="account" />}
+										style={{backgroundColor: colors.surface}}
+										textColor={colors.onSurface}
+										activeOutlineColor={colors.primary}
+									/>
+								)}
 							/>
-							<Autocomplete
+							{errors.patientName && (
+								<HelperText type="error">{errors.patientName.message}</HelperText>
+							)}
+							<Controller
 								control={control}
-								error={errors.Medico}
-								label="Medico"
-								options={["DRA GALVAN", "DR NAJERA", "DR DIAZ"]}
-								onSelect={setMedico}
-								value={medico}
-								icon="doctor"
+								name="patientAge"
+								defaultValue=""
+								render={({ field: { onChange, onBlur, value } }) => (
+									<TextInput
+										label="Edad del paciente"
+										value={value}
+										onChangeText={(e) => {onChange(e); setPatientAge(e)}}
+										onBlur={onBlur}
+										error={!!errors.patientAge}
+										mode="outlined"
+										style={{backgroundColor: colors.surface}}
+										textColor={colors.onSurface}
+										activeOutlineColor={colors.primary}
+										left={<TextInput.Icon icon="cake-variant" />}
+									/>
+								)}
 							/>
-							<Autocomplete
-								control={control}
-								error={errors.Paciente}
-								label="Paciente"
-								options={["Lopez Perez Antonio", "Rivera Lopez Andrea"]}
-								onSelect={setPaciente}
-								value={paciente}
-								icon="account"
-							/>
+							{errors.patientAge && (
+								<HelperText type="error">{errors.patientAge.message}</HelperText>
+							)}
 							<Autocomplete
 								control={control}
 								error={errors.Pieza}
@@ -314,6 +357,30 @@ export default function AddPiece() {
 								value={pieza}
 								icon="heart-pulse"
 							/>
+							<Controller
+								control={control}
+								name="Description"
+								defaultValue=""
+								render={({ field: { onChange, onBlur, value } }) => (
+									<TextInput
+										label="Description"
+										value={value}
+										onChangeText={(e) => {onChange(e); setDescription(e)}}
+										onBlur={onBlur}
+										error={!!errors.Description}
+										mode="outlined"
+										multiline
+										numberOfLines={4}
+										style={{backgroundColor: colors.surface}}
+										textColor={colors.onSurface}
+										activeOutlineColor={colors.primary}
+										left={<TextInput.Icon icon="image-text" />}
+									/>
+								)}
+							/>
+							{errors.Description && (
+								<HelperText type="error">{errors.Description.message}</HelperText>
+							)}
 						</View>
 					</View>
 				</View>
@@ -361,6 +428,7 @@ export default function AddPiece() {
 											keyboardType="numeric"
 											error={!!errors.precio}
 											mode="outlined"
+											left={<TextInput.Icon icon="cash" />}
 											style={{backgroundColor: colors.surface}}
 											textColor={colors.onSurface}
 											activeOutlineColor={colors.primary}
@@ -392,8 +460,8 @@ export default function AddPiece() {
 							/>
 							<TogglePill
 								label="Factura"
-								iconOn="file-document-check"
-								iconOff="file-document-remove"
+								iconOn="ticket"
+								iconOff="ticket-outline"
 								value={factura}
 								onToggle={() => setFactura(!factura)}
 							/>
@@ -412,55 +480,26 @@ export default function AddPiece() {
 								onToggle={() => setPaidWithCard(!paidWithCard)}
 							/>
 						</View>
-
-						<View
-							style={{
-								flexDirection: 'row',
-								alignItems: 'center',
-								justifyContent: 'center',
-								width: '100%',
-								gap: 8,
-							}}
-						>
-							<SegmentedButtons
-								value={progressStatus}
-								onValueChange={setProgressStatus}
-								buttons={[
-									{
-									value: 'En proceso',
-									label: 'En proceso',
-									icon: progressStatus === 'En proceso' ? 'progress-check' : 'progress-clock',
-									style: {
-										backgroundColor: progressStatus === 'En proceso'
-										? colors.primaryContainer
-										: colors.surface,
-										borderColor: colors.outline,
-									},
-									// No se pone color de texto manual
-									},
-									{
-									value: 'Terminado',
-									label: 'Terminado',
-									icon: progressStatus === 'Terminado' ? 'check-bold' : 'check-circle-outline',
-									style: {
-										backgroundColor: progressStatus === 'Terminado'
-										? colors.primaryContainer
-										: colors.surface,
-										borderColor: colors.outline,
-									},
-									},
-								]}
-								style={{
-									marginTop: 16,
-									alignSelf: 'center',
-								}}
-							/>
-						</View>
 					</View>
 				</View>
 			</View>
 
-			<View style={{ position: 'relative', alignItems: 'center', width: '100%' }}>
+			{ isLandscape ? 
+			<View
+				style={{
+					margin: 8
+				}}
+			>
+				<Button
+					mode="contained"
+					style={{ marginTop: 16, backgroundColor: colors.primary, zIndex: 1, top: 12 }}
+					onPress={handleSubmit(onSubmit)}
+				>
+					Añadir pieza
+				</Button>
+			</View>
+			:
+			(<View style={{ position: 'relative', alignItems: 'center', width: '100%' }}>
 				<View
 					style={{
 					position: 'absolute',
@@ -480,7 +519,8 @@ export default function AddPiece() {
 				>
 					Añadir pieza
 				</Button>
-			</View>
+			</View>)
+			}
 
 		</ScrollView>
 

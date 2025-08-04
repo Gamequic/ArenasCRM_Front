@@ -6,12 +6,20 @@ import {
   FlatList,
   KeyboardAvoidingView,
 } from "react-native";
-import { TextInput, Button, Text, Chip, useTheme, List, IconButton } from "react-native-paper";
+import {
+  TextInput,
+  Button,
+  Text,
+  Chip,
+  useTheme,
+  List,
+  IconButton,
+} from "react-native-paper";
 import DateTimePicker from "@react-native-community/datetimepicker";
-import { useNavigation } from '@react-navigation/native';
-import { useForm, Controller } from 'react-hook-form';
-import { yupResolver } from '@hookform/resolvers/yup';
-import * as yup from 'yup';
+import { useNavigation } from "@react-navigation/native";
+import { useForm, Controller } from "react-hook-form";
+import { yupResolver } from "@hookform/resolvers/yup";
+import * as yup from "yup";
 
 // Project imports
 import PiecesService from "../../services/pieces.service";
@@ -24,14 +32,14 @@ export default function FindPiece() {
   const { colors } = useTheme();
 
   const [activeFilters, setActiveFilters] = useState<string[]>([]);
-  const [publicId, setPublicId] = useState('');
+  const [publicId, setPublicId] = useState("");
   const [date, setDate] = useState<Date | null>(null);
   const [startDate, setStartDate] = useState<Date | null>(null);
   const [endDate, setEndDate] = useState<Date | null>(null);
-  const [hospital, setHospital] = useState('');
-  const [medico, setMedico] = useState('');
-  const [paciente, setPaciente] = useState('');
-  const [showDatePicker, setShowDatePicker] = useState("");
+  const [hospital, setHospital] = useState("");
+  const [medico, setMedico] = useState("");
+  const [paciente, setPaciente] = useState("");
+  const [showDatePicker, setShowDatePicker] = useState<"fecha" | "start" | "end" | "">("");
 
   const [isPaid, setIsPaid] = useState<"true" | "false" | null>(null);
   const [isFactura, setIsFactura] = useState<"true" | "false" | null>(null);
@@ -40,17 +48,17 @@ export default function FindPiece() {
 
   const [results, setResults] = useState<any[]>([]);
 
-  const formatDate = (d: Date | null) => d ? d.toISOString().split("T")[0] : null;
+  const formatDate = (d: Date | null) => (d ? d.toISOString().split("T")[0] : null);
 
   const toggleFilter = (filter: string) => {
-    setActiveFilters(prev =>
-      prev.includes(filter)
-        ? prev.filter(f => f !== filter)
-        : [...prev, filter]
+    setActiveFilters((prev) =>
+      prev.includes(filter) ? prev.filter((f) => f !== filter) : [...prev, filter]
     );
   };
 
-  const cycleBoolean = (current: "true" | "false" | null): "true" | "false" | null => {
+  const cycleBoolean = (
+    current: "true" | "false" | null
+  ): "true" | "false" | null => {
     if (current === null) return "true";
     if (current === "true") return "false";
     return null;
@@ -86,7 +94,6 @@ export default function FindPiece() {
       if (paidWithCard !== null) filters.paidWithCard = paidWithCard;
 
       const data = await service.find(filters);
-
       setResults(Array.isArray(data) ? data : []);
     } catch (error) {
       console.error("Failed to fetch pieces:", error);
@@ -97,28 +104,20 @@ export default function FindPiece() {
   const schema = yup.object().shape({
     identifier: yup
       .string()
-      .required('El identificador es obligatorio')
-      .matches(/^\d+$/, 'Debe contener solo números'),
+      .required("El identificador es obligatorio")
+      .matches(/^\d+$/, "Debe contener solo números"),
     precio: yup
       .string()
-      .required('El precio es obligatorio')
-      .test('is-positive-number', 'Debe ser un número positivo', value => {
+      .required("El precio es obligatorio")
+      .test("is-positive-number", "Debe ser un número positivo", (value) => {
         if (!value) return false;
         const num = Number(value);
         return !isNaN(num) && num > 0;
       }),
-    Hospital: yup
-      .string()
-      .required("El hospital es obligatorio"),
-    Medico: yup
-      .string()
-      .required("El medico es obligatorio"),
-    Paciente: yup
-      .string()
-      .required("El paciente es obligatorio"),
-    Pieza: yup
-      .string()
-      .required("El pieza es obligatorio")
+    Hospital: yup.string().required("El hospital es obligatorio"),
+    Medico: yup.string().required("El medico es obligatorio"),
+    Paciente: yup.string().required("El paciente es obligatorio"),
+    Pieza: yup.string().required("El pieza es obligatorio"),
   });
 
   const {
@@ -137,12 +136,26 @@ export default function FindPiece() {
     },
   });
 
-
-  const totalGanado = results.reduce((sum, item) => sum + (item.Price || 0), 0);
-  const totalPagado = results.reduce((sum, item) => sum + ((item.IsPaid ? item.Price : 0) || 0), 0);
-  const totalPorCobrar = results.reduce((sum, item) => sum + ((!item.IsPaid ? item.Price : 0) || 0), 0);
-  const totalEfectivo = results.reduce((sum, item) => sum + ((!item.PaidWithCard ? item.Price : 0) || 0), 0);
-  const totalTarjeta = results.reduce((sum, item) => sum + ((item.PaidWithCard ? item.Price : 0) || 0), 0);
+  const totalGanado = results.reduce(
+    (sum, item) => sum + (item.Price || 0),
+    0
+  );
+  const totalPagado = results.reduce(
+    (sum, item) => sum + ((item.IsPaid ? item.Price : 0) || 0),
+    0
+  );
+  const totalPorCobrar = results.reduce(
+    (sum, item) => sum + ((!item.IsPaid ? item.Price : 0) || 0),
+    0
+  );
+  const totalEfectivo = results.reduce(
+    (sum, item) => sum + ((!item.PaidWithCard ? item.Price : 0) || 0),
+    0
+  );
+  const totalTarjeta = results.reduce(
+    (sum, item) => sum + ((item.PaidWithCard ? item.Price : 0) || 0),
+    0
+  );
 
   return (
     <KeyboardAvoidingView
@@ -150,12 +163,25 @@ export default function FindPiece() {
       style={{ flex: 1 }}
     >
       <View style={{ flex: 1, backgroundColor: colors.background }}>
+        <Text variant="titleMedium" style={{ marginTop: 12, marginHorizontal: 8 }}>
+          Buscar por:
+        </Text>
 
-        <Text variant="titleMedium" style={{marginTop: 12, marginHorizontal: 8}}>Buscar por:</Text>
-
-        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, margin: 8 }}>
+        <View
+          style={{
+            flexDirection: "row",
+            flexWrap: "wrap",
+            gap: 8,
+            margin: 8,
+          }}
+        >
           {[
-            "Identificador", "Fecha", "Rango de fechas", "Hospital", "Medico", "Paciente"
+            "Identificador",
+            "Fecha",
+            "Rango de fechas",
+            "Hospital",
+            "Medico",
+            "Paciente",
           ].map((label) => (
             <Chip
               key={label}
@@ -179,21 +205,24 @@ export default function FindPiece() {
             onPress={() => setIsFactura(cycleBoolean(isFactura))}
             style={{ margin: 4 }}
           >
-            Con factura: {isFactura === "true" ? "✅" : isFactura === "false" ? "❌" : "—"}
+            Con factura:{" "}
+            {isFactura === "true" ? "✅" : isFactura === "false" ? "❌" : "—"}
           </Chip>
           <Chip
             selected={isAseguranza !== null}
             onPress={() => setIsAseguranza(cycleBoolean(isAseguranza))}
             style={{ margin: 4 }}
           >
-            Aseguranza: {isAseguranza === "true" ? "✅" : isAseguranza === "false" ? "❌" : "—"}
+            Aseguranza:{" "}
+            {isAseguranza === "true" ? "✅" : isAseguranza === "false" ? "❌" : "—"}
           </Chip>
           <Chip
             selected={paidWithCard !== null}
             onPress={() => setPaidWithCard(cycleBoolean(paidWithCard))}
             style={{ margin: 4 }}
           >
-            Tarjeta: {paidWithCard === "true" ? "✅" : paidWithCard === "false" ? "❌" : "—"}
+            Tarjeta:{" "}
+            {paidWithCard === "true" ? "✅" : paidWithCard === "false" ? "❌" : "—"}
           </Chip>
         </View>
 
@@ -295,15 +324,23 @@ export default function FindPiece() {
           />
         )}
 
-        <Button mode="contained" onPress={handleSearch} style={{ marginTop: 12, marginHorizontal: 8 }}>
+        <Button
+          mode="contained"
+          onPress={handleSearch}
+          style={{ marginTop: 12, marginHorizontal: 8 }}
+        >
           🔍 Buscar
         </Button>
 
         <List.AccordionGroup>
           <FlatList
-            contentContainerStyle={{ padding: 16, gap: 8, paddingBottom: 0 }}
+            contentContainerStyle={{
+              padding: 16,
+              gap: 8,
+              paddingBottom: 0,
+            }}
             data={results}
-            keyExtractor={(item, index) => item.id?.toString() || index.toString()}
+            keyExtractor={(item) => item.ID.toString()}
             keyboardShouldPersistTaps="handled"
             ListEmptyComponent={
               <Text style={{ marginTop: 16, textAlign: "center" }}>
@@ -312,18 +349,18 @@ export default function FindPiece() {
             }
             renderItem={({ item }) => (
               <List.Accordion
-                title={item.PublicId + ' - ' + item.Medico}
-                id={item.PublicId}
-                left={props => <List.Icon
-                  {...props}
-                  icon="folder"
-                  color={colors.primary}
-                />}
-                right={props => <List.Icon
-                  {...props}
-                  icon="cash"
-                  color={item.IsPaid ? "#4CAF50" : colors.error}
-                />}
+                title={`${item.PublicId} - ${item.Doctor.name}`}
+                id={item.PublicId.toString()}
+                left={(props) => (
+                  <List.Icon {...props} icon="folder" color={colors.primary} />
+                )}
+                right={(props) => (
+                  <List.Icon
+                    {...props}
+                    icon="cash"
+                    color={item.IsPaid ? "#4CAF50" : colors.error}
+                  />
+                )}
               >
                 <View
                   style={{
@@ -332,18 +369,22 @@ export default function FindPiece() {
                     backgroundColor: colors.surface,
                     borderEndEndRadius: 12,
                     borderStartEndRadius: 12,
-                    flexDirection: 'row',       // Para poner contenido e icono en fila
-                    justifyContent: 'space-between', // Separar datos y botón
-                    alignItems: 'center',
+                    flexDirection: "row",
+                    justifyContent: "space-between",
+                    alignItems: "center",
                   }}
                 >
-                  {/* Contenedor de texto con datos del paciente */}
                   <View style={{ flex: 1, paddingRight: 8 }}>
                     <Text variant="titleMedium">ID: {item.PublicId}</Text>
-                    <Text>Fecha: {new Date(item.Date).toLocaleDateString("es-MX").replaceAll('/', '-')}</Text>
-                    <Text>Hospital: {item.Hospital}</Text>
-                    <Text>Medico: {item.Medico}</Text>
-                    <Text>Paciente: {item.Paciente}</Text>
+                    <Text>
+                      Fecha:{" "}
+                      {new Date(item.Date)
+                        .toLocaleDateString("es-MX")
+                        .replaceAll("/", "-")}
+                    </Text>
+                    <Text>Hospital: {item.Hospital.name}</Text>
+                    <Text>Medico: {item.Doctor.name}</Text>
+                    <Text>Paciente: {item.PatientName}</Text>
                     <Text>Pieza: {item.Pieza}</Text>
                     <Text>Precio: ${item.Price?.toFixed(2)}</Text>
                     <Text>Pagado: {item.IsPaid ? "✅" : "❌"}</Text>
@@ -352,17 +393,15 @@ export default function FindPiece() {
                     <Text>Tarjeta: {item.PaidWithCard ? "✅" : "❌"}</Text>
                   </View>
 
-                  {/* Botón editar */}
                   <IconButton
                     icon="pencil"
                     size={24}
-                    onPress={() => {
-                      navigation.navigate('UpdatePiece', {
-                        itemID: item.ID
-                      });
-                    }}
+                    onPress={() =>
+                      navigation.navigate("UpdatePiece", {
+                        itemID: item.ID,
+                      })
+                    }
                     accessibilityLabel={`Editar pieza ${item.PublicId}`}
-                    // opcional: color y estilo para mejor UI
                     iconColor={colors.primary}
                     style={{ marginLeft: 8 }}
                   />
@@ -372,7 +411,6 @@ export default function FindPiece() {
           />
         </List.AccordionGroup>
 
-        {/* --- RESUMEN DE PAGOS --- */}
         <View
           style={{
             padding: 16,
