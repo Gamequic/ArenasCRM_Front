@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useWindowDimensions, View, Platform, Pressable, ScrollView } from "react-native";
 import { TextInput, Text, Button, useTheme, SegmentedButtons, HelperText, Modal, Portal, IconButton } from "react-native-paper";
 import DateTimePicker from "@react-native-community/datetimepicker";
@@ -11,13 +11,21 @@ import * as yup from 'yup';
 import PiecesService from "../../services/pieces.service";
 import TogglePill from "../../components/TogglePill";
 import Autocomplete from "../../components/Autocomplete";
+import DoctorService from "../../services/doctor.service";
+import HospitalService from "../../services/hospital.service";
 
 const service = new PiecesService();
+const doctorService = new DoctorService();
+const hospitalService = new HospitalService();
 
 export default function AddPiece() {
 	const { width, height } = useWindowDimensions();
 	const { colors } = useTheme();
 	const isLandscape = width > height;
+
+	// AutoComplete data
+	const [doctors, setDoctors] = useState([]);
+	const [hospitals, setHospitals] = useState([]);
 
 	const [successVisible, setSuccessVisible] = useState(false);
 	const [show, setShow] = useState(false);
@@ -98,6 +106,20 @@ export default function AddPiece() {
 		// Show feed back to user
 		setSuccessVisible(true);
 	};
+
+	useEffect(() => {
+		async function getAutocomplete() {
+			const doctors = await doctorService.find();
+			const hospitals = await hospitalService.find();
+
+			const doctorsNameList = doctors.map(obj => obj.name);
+			const hospitalNameList = hospitals.map(obj => obj.name);
+			setDoctors(doctorsNameList);
+			setHospitals(hospitalNameList);
+		}
+
+		getAutocomplete();
+	}, [])
 
 	const schema = yup.object().shape({
 		identifier: yup
@@ -259,7 +281,7 @@ export default function AddPiece() {
 								control={control}
 								error={errors.Hospital}
 								label="Hospital"
-								options={["Hospital Angeles", "DEL SOL"]}
+								options={hospitals}
 								onSelect={setHospital}
 								value={hospital}
 								icon="hospital-building"
@@ -268,7 +290,7 @@ export default function AddPiece() {
 								control={control}
 								error={errors.Doctor}
 								label="Doctor"
-								options={["DRA GALVAN", "DR NAJERA", "DR DIAZ"]}
+								options={doctors}
 								onSelect={setdoctorName}
 								value={doctorName}
 								icon="doctor"
