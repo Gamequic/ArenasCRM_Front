@@ -21,6 +21,7 @@ export default function FindPieceScreen() {
 
   const handleSearch = async (filters) => {
     try {
+      console.log(filters)
       const data = await service.find(filters);
       setResults(Array.isArray(data) ? data : []);
     } catch (error) {
@@ -46,8 +47,7 @@ export default function FindPieceScreen() {
         <FiltersContainer
           isLandscape={isLandscape}
           visible={filtersModalVisible}
-          onOpen={() => setFiltersModalVisible(true)}
-          onClose={() => setFiltersModalVisible(false)}
+          setVisible={setFiltersModalVisible}
           onSearch={handleSearch}
           colors={colors}
         />
