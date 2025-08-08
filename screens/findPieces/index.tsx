@@ -1,5 +1,5 @@
 import React from "react";
 
-import FindPiece from "./findByFilter";
+import FindPiece from "./FindPieceScreen";
 
 export default FindPiece;
