@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useWindowDimensions, View, Platform, Pressable, ScrollView } from "react-native";
 import { TextInput, Text, Button, useTheme, SegmentedButtons, HelperText, Modal, Portal, IconButton } from "react-native-paper";
-import DateTimePicker from "@react-native-community/datetimepicker";
 import Icon from "react-native-paper/src/components/Icon";
 import { useForm, Controller } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
@@ -13,6 +12,7 @@ import TogglePill from "../../components/TogglePill";
 import Autocomplete from "../../components/Autocomplete";
 import DoctorService from "../../services/doctor.service";
 import HospitalService from "../../services/hospital.service";
+import DatePickerCrossPlatform from "../../components/DatePicker";
 
 const service = new PiecesService();
 const doctorService = new DoctorService();
@@ -266,11 +266,9 @@ export default function AddPiece() {
 							</Pressable>
 
 							{show && (
-								<DateTimePicker
+								<DatePickerCrossPlatform
 									value={date}
-									mode="date"
-									display={Platform.OS === "ios" ? "spinner" : "default"}
-									onChange={(event, selectedDate) => {
+									onChange={(selectedDate) => {
 										setShow(false);
 										if (selectedDate) setDate(selectedDate);
 									}}

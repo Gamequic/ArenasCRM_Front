@@ -11,13 +11,13 @@ import {
   Button,
   HelperText,
 } from "react-native-paper";
-import DateTimePicker from "@react-native-community/datetimepicker";
 import RBSheet from "react-native-raw-bottom-sheet";
 import { useForm, Controller } from "react-hook-form";
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
 
 import Autocomplete from "../../components/Autocomplete";
+import DatePickerCrossPlatform from "../../components/DatePicker";
 
 export default function FiltersContainer({
   isLandscape,
@@ -31,13 +31,13 @@ export default function FiltersContainer({
 
   const filterSheetRef = useRef(null);
 
-  // Yup schema with dynamic validation based on activeFilters
+  // Yup schema con validaciones dinámicas
   const schema = yup.object().shape({
     publicId: yup
       .string()
       .test("required-if-identificador", "El identificador es obligatorio y debe ser numérico", function(value) {
         const { activeFilters = [] } = this.options.context || {};
-        if (!activeFilters.includes("Identificador")) return true; // No validar si no activo
+        if (!activeFilters.includes("Identificador")) return true;
         return !!value && /^\d+$/.test(value);
       })
       .notRequired(),
@@ -179,7 +179,7 @@ export default function FiltersContainer({
     if (data.paidWithCard !== null && data.paidWithCard !== undefined) filters.paidWithCard = data.paidWithCard;
 
     onSearch(filters);
-    if (!isLandscape && filterSheetRef.current) filterSheetRefRef.current.close();
+    if (!isLandscape && filterSheetRef.current) filterSheetRef.current.close();
     setVisible(false);
   };
 
@@ -281,11 +281,9 @@ export default function FiltersContainer({
                 <HelperText type="error">{errors.date.message}</HelperText>
               )}
               {showDatePicker === "date" && (
-                <DateTimePicker
+                <DatePickerCrossPlatform
                   value={value ? new Date(value) : new Date()}
-                  mode="date"
-                  display={Platform.OS === "ios" ? "spinner" : "default"}
-                  onChange={(e, selectedDate) => {
+                  onChange={(selectedDate) => {
                     setShowDatePicker("");
                     if (selectedDate) onChange(selectedDate);
                   }}
@@ -317,11 +315,9 @@ export default function FiltersContainer({
                   <HelperText type="error">{errors.startDate.message}</HelperText>
                 )}
                 {showDatePicker === "startDate" && (
-                  <DateTimePicker
+                  <DatePickerCrossPlatform
                     value={value ? new Date(value) : new Date()}
-                    mode="date"
-                    display={Platform.OS === "ios" ? "spinner" : "default"}
-                    onChange={(e, selectedDate) => {
+                    onChange={(selectedDate) => {
                       setShowDatePicker("");
                       if (selectedDate) onChange(selectedDate);
                     }}
@@ -349,11 +345,9 @@ export default function FiltersContainer({
                   <HelperText type="error">{errors.endDate.message}</HelperText>
                 )}
                 {showDatePicker === "endDate" && (
-                  <DateTimePicker
+                  <DatePickerCrossPlatform
                     value={value ? new Date(value) : new Date()}
-                    mode="date"
-                    display={Platform.OS === "ios" ? "spinner" : "default"}
-                    onChange={(e, selectedDate) => {
+                    onChange={(selectedDate) => {
                       setShowDatePicker("");
                       if (selectedDate) onChange(selectedDate);
                     }}
