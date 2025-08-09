@@ -68,8 +68,6 @@ export default function AddPiece() {
 			Description: description,
 		};
 
-		console.log(data)
-
 		try {
 			await service.create(data);
 		} catch (error) {

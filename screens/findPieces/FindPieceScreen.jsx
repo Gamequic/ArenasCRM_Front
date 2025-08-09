@@ -21,7 +21,6 @@ export default function FindPieceScreen() {
 
   const handleSearch = async (filters) => {
     try {
-      console.log(filters)
       const data = await service.find(filters);
       setResults(Array.isArray(data) ? data : []);
     } catch (error) {

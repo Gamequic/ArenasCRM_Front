@@ -1,46 +1,55 @@
-import React, { useState, useEffect } from "react";
-import { View, Platform, Pressable, ScrollView } from "react-native";
+import React, { useEffect, useState } from "react";
+import { useWindowDimensions, View, Platform, Pressable, ScrollView } from "react-native";
 import { TextInput, Text, Button, useTheme, SegmentedButtons, HelperText, Modal, Portal, IconButton } from "react-native-paper";
-import DateTimePicker from "@react-native-community/datetimepicker";
-import { useNavigation, useRoute } from '@react-navigation/native';
 import Icon from "react-native-paper/src/components/Icon";
 import { useForm, Controller } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
+import { useNavigation, useRoute } from "@react-navigation/native";
 import * as yup from 'yup';
 
 // Project imports
 import PiecesService from "../../services/pieces.service";
 import TogglePill from "../../components/TogglePill";
 import Autocomplete from "../../components/Autocomplete";
+import DoctorService from "../../services/doctor.service";
+import HospitalService from "../../services/hospital.service";
+import DatePickerCrossPlatform from "../../components/DatePicker";
 
 const service = new PiecesService();
+const doctorService = new DoctorService();
+const hospitalService = new HospitalService();
 
-export default function UpdatePiece() {
-	const { colors } = useTheme();
+export default function AddPiece() {
+	const { width, height } = useWindowDimensions();
 	const navigation = useNavigation();
 	const route = useRoute();
   	const { itemID } = route.params;
+	const { colors } = useTheme();
+	const isLandscape = width > height;
+
+	// AutoComplete data
+	const [doctors, setDoctors] = useState([]);
+	const [hospitals, setHospitals] = useState([]);
 
 	const [successVisible, setSuccessVisible] = useState(false);
+	const [show, setShow] = useState(false);
 
-	// Step 1: Form field states
+	// Form field states
 	const [identifier, setIdentifier] = useState('');
 	const [date, setDate] = useState(new Date());
-	const [show, setShow] = useState(false);
 	const [hospital, setHospital] = useState('');
-	const [medico, setMedico] = useState('');
-	const [paciente, setPaciente] = useState('');
+	const [doctorName, setdoctorName] = useState('');
+	const [patientName, setPatientName] = useState('');
+	const [patientAge, setPatientAge] = useState('');
 	const [pieza, setPieza] = useState('');
 	const [precio, setPrecio] = useState('');
+	const [description, setDescription] = useState('');
 
-	// Step 2: Checkbox states
+	// Checkbox states
 	const [paid, setPaid] = useState(false);
 	const [factura, setFactura] = useState(false);
 	const [aseguranza, setAseguranza] = useState(false);
-	const [paidWithCard, setPaidWithCard] = useState(false);
-
-	// Step 3: Progress status (chips)
-	const [progressStatus, setProgressStatus] = useState('En proceso');
+	const [paidWithCard, setPaidWithCard] = useState(false); // ✅ nuevo estado
 
 	// Format date for backend: YYYY-MM-DD
 	const formattedDate = new Date(date).toISOString(); 
@@ -48,26 +57,27 @@ export default function UpdatePiece() {
 	// Step 4: Gather form data and log JSON
 	const onSubmit = async () => {
 		const data = {
-			id: itemID,
 			PublicId: parseInt(identifier),
 			date: formattedDate,
-			Hospital: hospital,
-			Medico: medico,
-			Paciente: paciente,
+			Hospital: { Name : hospital },
+			Doctor: { Name : doctorName },
+			PatientName: patientName,
+			PatientAge: parseInt(patientAge),
 			Pieza: pieza,
 			Price: parseFloat(precio),
 			IsPaid: paid,
 			IsFactura: factura,
 			IsAseguranza: aseguranza,
 			PaidWithCard: paidWithCard,
-			Status: progressStatus,
+			Description: description,
 		};
 
 		try {
+			console.log(data, itemID)
 			await service.update(itemID, data);
 		} catch (error) {
 			if (error instanceof Error) {
-				console.error("Failed to update piece:", error.message);
+				console.error("Failed to create piece:", error.message);
 				if (error.message === "PublicId must be unique\n") {
 					setError("identifier", {
 						type: "manual",
@@ -97,12 +107,17 @@ export default function UpdatePiece() {
 
 			setPrecio(dataPiece.Price);
 			setValue("precio", String(dataPiece.Price));
-			setHospital(dataPiece.Hospital);
-			setValue("Hospital", dataPiece.Hospital);
-			setMedico(dataPiece.Medico);
-			setValue("Medico", dataPiece.Medico);
-			setPaciente(dataPiece.Paciente);
-			setValue("Paciente", dataPiece.Paciente);
+			setHospital(dataPiece.Hospital.name);
+			setValue("Hospital", dataPiece.Hospital.name);
+			setdoctorName(dataPiece.Doctor.name);
+			setValue("Doctor", dataPiece.Doctor.name);
+			setPatientName(dataPiece.PatientName);
+			setValue("patientName", dataPiece.PatientName);
+			setPatientAge(dataPiece.PatientAge);
+			setValue("patientAge", dataPiece.PatientAge);
+			setDescription(dataPiece.Description);
+			setValue("Description", dataPiece.Description);
+
 			setPieza(dataPiece.Pieza);
 			setValue("Pieza", dataPiece.Pieza);
 
@@ -111,11 +126,24 @@ export default function UpdatePiece() {
 			setFactura(dataPiece.IsFactura);
 			setAseguranza(dataPiece.IsAseguranza)
 			setPaidWithCard(dataPiece.PaidWithCard);
-			setProgressStatus(dataPiece.Status);
 		}
 
 		fetchData();
   	}, []);
+
+	useEffect(() => {
+		async function getAutocomplete() {
+			const doctors = await doctorService.find();
+			const hospitals = await hospitalService.find();
+
+			const doctorsNameList = doctors.map(obj => obj.name);
+			const hospitalNameList = hospitals.map(obj => obj.name);
+			setDoctors(doctorsNameList);
+			setHospitals(hospitalNameList);
+		}
+
+		getAutocomplete();
+	}, [])
 
 	const schema = yup.object().shape({
 		identifier: yup
@@ -133,32 +161,35 @@ export default function UpdatePiece() {
 		Hospital: yup
 			.string()
 			.required("El hospital es obligatorio"),
-		Medico: yup
+		Doctor: yup
 			.string()
-			.required("El medico es obligatorio"),
-		Paciente: yup
+			.required("El nombre del doctor es obligatorio"),
+		patientName: yup
 			.string()
-			.required("El paciente es obligatorio"),
+			.required("El nombre del paciente es obligatorio"),
+		patientAge: yup
+			.string()
+			.test('is-positive-number', 'Debe ser un número positivo', value => {
+				if (!value) return false;
+				const num = Number(value);
+				return !isNaN(num) && num > 0;
+			}),
 		Pieza: yup
 			.string()
-			.required("El pieza es obligatorio")
+			.required("El pieza es obligatorio"),
+		Description: yup
+			.string()
 	});
 
 	const {
 		control,
 		handleSubmit,
 		reset,
-		setError,
 		setValue,
+		setError,
 		formState: { errors },
 	} = useForm({
-		resolver: yupResolver(schema),
-		defaultValues: {
-			Hospital: "",
-			Medico: "",
-			Paciente: "",
-			Pieza: "",
-		},
+		resolver: yupResolver(schema)
 	});
 
 	const styles = {
@@ -184,150 +215,218 @@ export default function UpdatePiece() {
 					gap: 12
 				}}
 			>
-				<View style={{overflow: 'hidden', ...styles.card}}>
-					<View
-						style={{
-							backgroundColor: colors.inversePrimary,
-							paddingVertical: 12,
-							paddingHorizontal: 16,
-							flexDirection: 'row',
-							alignItems: 'center',
-							justifyContent: 'flex-start',
-							gap: 8,
-						}}
-						>
-						<Icon source="archive" size={28} color={colors.onSurface} />
-						<Text
+				<View
+					style={{
+						display: 'flex',
+						flexDirection: isLandscape ? 'row' : 'column',
+						gap: 12,
+						width: '100%'
+					}}
+				>
+					<View style={{flex: 1, overflow: 'hidden', ...styles.card}}>
+						<View
 							style={{
-							color: colors.onSurface,
-							fontSize: 24,
-							fontWeight: '600',
-							lineHeight: 34,
+								backgroundColor: colors.inversePrimary,
+								paddingVertical: 12,
+								paddingHorizontal: 16,
+								flexDirection: 'row',
+								alignItems: 'center',
+								justifyContent: 'flex-start',
+								gap: 8,
 							}}
-						>
-							Registro de pieza { itemID }
-						</Text>
-					</View>
+							>
+							<Icon source="archive" size={28} color={colors.onSurface} />
+							<Text
+								style={{
+								color: colors.onSurface,
+								fontSize: 24,
+								fontWeight: '600',
+								lineHeight: 34,
+								}}
+							>
+								Origen de pieza
+							</Text>
+						</View>
 
-					<View style={{padding: 12, gap: 8}}>
-						<Controller
-							control={control}
-							name="identifier"
-							defaultValue=""
-							render={({ field: { onChange, onBlur, value } }) => (
+						<View style={{padding: 12, gap: 8}}>
+							<Controller
+								control={control}
+								name="identifier"
+								defaultValue=""
+								render={({ field: { onChange, onBlur, value } }) => (
+									<TextInput
+										label="Identificador"
+										value={value}
+										onChangeText={(e) => {onChange(e); setIdentifier(e)}}
+										onBlur={onBlur}
+										error={!!errors.identifier}
+										mode="outlined"
+										left={<TextInput.Icon icon="identifier" />}
+										style={{backgroundColor: colors.surface}}
+										textColor={colors.onSurface}
+										activeOutlineColor={colors.primary}
+									/>
+								)}
+							/>
+							{errors.identifier && (
+								<HelperText type="error">{errors.identifier.message}</HelperText>
+							)}
+
+
+							<Pressable
+								style={{ width: "100%" }}
+								onPress={() => setShow(true)}
+							>
 								<TextInput
-									label="Identificador"
-									value={value}
-									onChangeText={(e) => {onChange(e); setIdentifier(e)}}
-									onBlur={onBlur}
-									error={!!errors.identifier}
+									label="Fecha"
+									value={date.toLocaleDateString()}
+									editable={false}
+									pointerEvents="none"
 									mode="outlined"
 									style={{backgroundColor: colors.surface}}
 									textColor={colors.onSurface}
 									activeOutlineColor={colors.primary}
+									left={<TextInput.Icon icon={"calendar"} />}
+								/>
+							</Pressable>
+
+							{show && (
+								<DatePickerCrossPlatform
+									value={date}
+									onChange={(selectedDate) => {
+										setShow(false);
+										if (selectedDate) setDate(selectedDate);
+									}}
 								/>
 							)}
-						/>
-						{errors.identifier && (
-							<HelperText type="error">{errors.identifier.message}</HelperText>
-						)}
 
-
-						<Pressable
-							style={{ width: "100%" }}
-							onPress={() => setShow(true)}
-						>
-							<TextInput
-								label="Fecha"
-								value={date.toLocaleDateString()}
-								editable={false}
-								pointerEvents="none"
-								mode="outlined"
-								style={{backgroundColor: colors.surface}}
-								textColor={colors.onSurface}
-								activeOutlineColor={colors.primary}
-								left={<TextInput.Icon icon={"calendar"} />}
+							<Autocomplete
+								control={control}
+								error={errors.Hospital}
+								label="Hospital"
+								options={hospitals}
+								onSelect={setHospital}
+								value={hospital}
+								icon="hospital-building"
 							/>
-						</Pressable>
-
-						{show && (
-							<DateTimePicker
-								value={date}
-								mode="date"
-								display={Platform.OS === "ios" ? "spinner" : "default"}
-								onChange={(event, selectedDate) => {
-									setShow(false);
-									if (selectedDate) setDate(selectedDate);
-								}}
+							<Autocomplete
+								control={control}
+								error={errors.Doctor}
+								label="Doctor"
+								options={doctors}
+								onSelect={setdoctorName}
+								value={doctorName}
+								icon="doctor"
 							/>
-						)}
+						</View>
 					</View>
-				</View>
 
-				<View style={{overflow: 'visible', ...styles.card}}>
-					<View
-						style={{
-							backgroundColor: colors.inversePrimary,
-							paddingVertical: 12,
-							paddingHorizontal: 16,
-							flexDirection: 'row',
-							alignItems: 'center',
-							justifyContent: 'flex-start',
-							gap: 8,
-							borderTopEndRadius: 12,
-							borderTopStartRadius: 12,
-						}}
-						>
-						<Icon source="hospital-building" size={28} color={colors.onSurface} />
-						<Text
+					<View style={{flex: 1, overflow: 'visible', ...styles.card}}>
+						<View
 							style={{
-							color: colors.onSurface,
-							fontSize: 24,
-							fontWeight: '600',
-							lineHeight: 34,
+								backgroundColor: colors.inversePrimary,
+								paddingVertical: 12,
+								paddingHorizontal: 16,
+								flexDirection: 'row',
+								alignItems: 'center',
+								justifyContent: 'flex-start',
+								gap: 8,
+								borderTopEndRadius: 12,
+								borderTopStartRadius: 12,
 							}}
-						>
-							Solicitud
-						</Text>
-					</View>
+							>
+							<Icon source="hospital-building" size={28} color={colors.onSurface} />
+							<Text
+								style={{
+								color: colors.onSurface,
+								fontSize: 24,
+								fontWeight: '600',
+								lineHeight: 34,
+								}}
+							>
+								Paciente
+							</Text>
+						</View>
 
-					<View style={{padding: 12, gap: 8}}>
-						<Autocomplete
-							control={control}
-							error={errors.Hospital}
-							label="Hospital"
-							options={["Hospital Angeles", "DEL SOL"]}
-							onSelect={setHospital}
-							value={hospital}
-							icon="hospital-building"
-						/>
-						<Autocomplete
-							control={control}
-							error={errors.Medico}
-							label="Medico"
-							options={["DRA GALVAN", "DR NAJERA", "DR DIAZ"]}
-							onSelect={setMedico}
-							value={medico}
-							icon="doctor"
-						/>
-						<Autocomplete
-							control={control}
-							error={errors.Paciente}
-							label="Paciente"
-							options={["Lopez Perez Antonio", "Rivera Lopez Andrea"]}
-							onSelect={setPaciente}
-							value={paciente}
-							icon="account"
-						/>
-						<Autocomplete
-							control={control}
-							error={errors.Pieza}
-							label="Pieza"
-							options={["Biopsia de Higado", "Biopsia endoscopia"]}
-							onSelect={setPieza}
-							value={pieza}
-							icon="heart-pulse"
-						/>
+						<View style={{padding: 12, gap: 8}}>
+							<Controller
+								control={control}
+								name="patientName"
+								defaultValue=""
+								render={({ field: { onChange, onBlur, value } }) => (
+									<TextInput
+										label="Nombre del paciente"
+										value={value}
+										onChangeText={(e) => {onChange(e); setPatientName(e)}}
+										onBlur={onBlur}
+										error={!!errors.patientName}
+										mode="outlined"
+										left={<TextInput.Icon icon="account" />}
+										style={{backgroundColor: colors.surface}}
+										textColor={colors.onSurface}
+										activeOutlineColor={colors.primary}
+									/>
+								)}
+							/>
+							{errors.patientName && (
+								<HelperText type="error">{errors.patientName.message}</HelperText>
+							)}
+							<Controller
+								control={control}
+								name="patientAge"
+								defaultValue=""
+								render={({ field: { onChange, onBlur, value } }) => (
+									<TextInput
+										label="Edad del paciente"
+										value={value}
+										onChangeText={(e) => {onChange(e); setPatientAge(e)}}
+										onBlur={onBlur}
+										error={!!errors.patientAge}
+										mode="outlined"
+										style={{backgroundColor: colors.surface}}
+										textColor={colors.onSurface}
+										activeOutlineColor={colors.primary}
+										left={<TextInput.Icon icon="cake-variant" />}
+									/>
+								)}
+							/>
+							{errors.patientAge && (
+								<HelperText type="error">{errors.patientAge.message}</HelperText>
+							)}
+							<Autocomplete
+								control={control}
+								error={errors.Pieza}
+								label="Pieza"
+								options={["Biopsia de Higado", "Biopsia endoscopia"]}
+								onSelect={setPieza}
+								value={pieza}
+								icon="heart-pulse"
+							/>
+							<Controller
+								control={control}
+								name="Description"
+								defaultValue=""
+								render={({ field: { onChange, onBlur, value } }) => (
+									<TextInput
+										label="Description"
+										value={value}
+										onChangeText={(e) => {onChange(e); setDescription(e)}}
+										onBlur={onBlur}
+										error={!!errors.Description}
+										mode="outlined"
+										multiline
+										numberOfLines={4}
+										style={{backgroundColor: colors.surface}}
+										textColor={colors.onSurface}
+										activeOutlineColor={colors.primary}
+										left={<TextInput.Icon icon="image-text" />}
+									/>
+								)}
+							/>
+							{errors.Description && (
+								<HelperText type="error">{errors.Description.message}</HelperText>
+							)}
+						</View>
 					</View>
 				</View>
 
@@ -374,6 +473,7 @@ export default function UpdatePiece() {
 											keyboardType="numeric"
 											error={!!errors.precio}
 											mode="outlined"
+											left={<TextInput.Icon icon="cash" />}
 											style={{backgroundColor: colors.surface}}
 											textColor={colors.onSurface}
 											activeOutlineColor={colors.primary}
@@ -405,8 +505,8 @@ export default function UpdatePiece() {
 							/>
 							<TogglePill
 								label="Factura"
-								iconOn="file-document-check"
-								iconOff="file-document-remove"
+								iconOn="ticket"
+								iconOff="ticket-outline"
 								value={factura}
 								onToggle={() => setFactura(!factura)}
 							/>
@@ -425,55 +525,26 @@ export default function UpdatePiece() {
 								onToggle={() => setPaidWithCard(!paidWithCard)}
 							/>
 						</View>
-
-						<View
-							style={{
-								flexDirection: 'row',
-								alignItems: 'center',
-								justifyContent: 'center',
-								width: '100%',
-								gap: 8,
-							}}
-						>
-							<SegmentedButtons
-								value={progressStatus}
-								onValueChange={setProgressStatus}
-								buttons={[
-									{
-									value: 'En proceso',
-									label: 'En proceso',
-									icon: progressStatus === 'En proceso' ? 'progress-check' : 'progress-clock',
-									style: {
-										backgroundColor: progressStatus === 'En proceso'
-										? colors.primaryContainer
-										: colors.surface,
-										borderColor: colors.outline,
-									},
-									// No se pone color de texto manual
-									},
-									{
-									value: 'Terminado',
-									label: 'Terminado',
-									icon: progressStatus === 'Terminado' ? 'check-bold' : 'check-circle-outline',
-									style: {
-										backgroundColor: progressStatus === 'Terminado'
-										? colors.primaryContainer
-										: colors.surface,
-										borderColor: colors.outline,
-									},
-									},
-								]}
-								style={{
-									marginTop: 16,
-									alignSelf: 'center',
-								}}
-							/>
-						</View>
 					</View>
 				</View>
 			</View>
 
-			<View style={{ position: 'relative', alignItems: 'center', width: '100%' }}>
+			{ isLandscape ? 
+			<View
+				style={{
+					margin: 8
+				}}
+			>
+				<Button
+					mode="contained"
+					style={{ marginTop: 16, backgroundColor: colors.primary, zIndex: 1, top: 12 }}
+					onPress={handleSubmit(onSubmit)}
+				>
+					Añadir pieza
+				</Button>
+			</View>
+			:
+			(<View style={{ position: 'relative', alignItems: 'center', width: '100%' }}>
 				<View
 					style={{
 					position: 'absolute',
@@ -491,9 +562,10 @@ export default function UpdatePiece() {
 					style={{ marginTop: 16, backgroundColor: colors.primary, zIndex: 1, top: 12 }}
 					onPress={handleSubmit(onSubmit)}
 				>
-					Actualizar pieza
+					Añadir pieza
 				</Button>
-			</View>
+			</View>)
+			}
 
 		</ScrollView>
 
